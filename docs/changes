@@ -1,0 +1,102 @@
+Changes from 1.0 to 1.1
+=======================
+
+- There are a couple of bugs corrected: (tanks to Paul Foley)
+
+   1) When a file is deleted, QDOS only sets the top byte of the info
+      in the map to 0xFD.
+      1.0 assumes the entire 12 bit entry is set to 0xFDF, but the final F
+      will probably not be there unless that block has never been used.
+
+   2) 1.0 use read_block0() to read in the map block, but it assumes the
+      map block is 3 sectors long, in sectors 0, 3 and 6.  This is normally
+      the case, but it _can_ be changed (there is an 84-track formatting
+      program around that forces 4 sector allocation blocks).  All you can
+      guarantee is that the first sector will be sector 0.  What I would
+      suggest is to load in sector 0, get the info in the first 96 bytes and
+      then use the general read_block() routine to read the entire map.
+
+   3) #define for Maximum allocation block, since if allocation block was >3
+      this cause a "core dump".
+
+   4) Another #define for Maximum number of sectors (not ever 1440).
+
+   5) Use the "allocblock" variable for allocation blocksnumber (refer to 2)).
+
+   6) Check for unexistent sectors in a file.
+
+   7) Check if the disk is a QL disk (1.0 simply dump)
+
+I think there are some bugs with 3) and 4) and 5), but I cannot try the code
+(I have never seen any of these disks).
+
+Changes from 1.1 to 1.2
+=======================
+
+   1) A little bug: now argfnum is a long int (problems with Turbo C)
+
+   2) MS-DOS support !!!
+
+   3) A bug with lwrd, now return a unsigned long int and is a new function.
+
+   4) Eh eh eh a bug in the name of my city (Padova and NOT Pdaova :-)
+
+Changes from 1.2 to 1.3
+=======================
+
+   1) MS-DOS is a brain damnaged system. Stdout was opened with CR/LF
+      conversion and this cause damnages of binaries.
+
+   2) Corrected a bug in floppy reset under MS-DOS.
+
+Changes from 1.3 to 1.4
+=======================
+
+   1) "bleod" and "byeod" now are unsigned integers.
+
+   2) "wrd()" take a unsigned char pointer and return a unsigned int. There
+      are some problems with directories. Now in wrd() are some type
+      conversions.
+
+Changes from 1.4 to 1.5
+=======================
+
+   1) Apple Mac adaption by Roberto Avanzi <gandalf@sabrina.dei.unipd.it>
+
+   2) patches by Scott Telford <st@epcc.edinburgh.ac.uk>
+      - Improved error messages
+      - Qdos level 2 device subdirectories (file type 255) are now
+        recognised in the directory listing (indicated by a "->" like
+        the level 2 WSTAT.
+      - Unrecognised file types have their type number printed.
+      - Empty directory entries (length=0) are skipped in the directory
+        listing.
+
+Changes from 1.5 to 1.6
+=======================
+
+   1) Corrected a bug in the memory allocation of pdir. Now malloc
+      allocate the right size of memory (blocks of 512*allocblocks and not
+      of 512 bytes !)
+
+   2) A new switch -s for a short listing with only filenames. This is very
+      usefull for obtaining file names in scripts in a Unix environment.
+
+      example:
+                  # this program convert every file in a QL disk
+
+                  for i in `qltools $device -s`
+                  do
+                          qltools $device $i > $i
+                  done
+
+--
+       (c)1992 by Giuseppe Zanetti
+
+       Giuseppe Zanetti
+       via Vergani, 11 - 35031 Abano Terme (Padova) ITALY
+       e-mail: beppe@sabrina.dei.unipd.it
+
+       This is copyrighted software, but freely distributable.
+
+

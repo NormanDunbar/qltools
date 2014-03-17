@@ -1,0 +1,229 @@
+This file updates the QLtools documentation to v2.2 from v1.6. Note
+that I do not have access to v1.7 - v2.02 documentation (if any
+exists). The fixes/enhancements noted below are changes from the v2.02
+code.
+
+Bug fixes/features in QLTOOLS 2.2
+=================================
+
+1. Format option now works
+
+2. HD disks now work
+
+3. Disk type QL5A/QL5B  recognition fixed.
+
+4. Random number is written when formatted.
+
+5. Update count is updated on write and delete
+
+6. Intel cross compiler files XTc68/Lux68 have the file type and data
+   size set.
+
+7. When Unix files are written, directory specs are removed and
+   any dots are replaced with '_'. DOS files have '.' replacement.
+
+8. I/O errors (e.g. write protected disk) trapped.
+
+9. Wildcard operation for write (under Unix).
+
+10. TKII type overwrite messages option.
+
+11. Segment fault (GPF) on map listing of disk with sub-directories
+    fixed.
+
+12. Range operations for read and delete.
+
+13. Read-only operations allowed on write protected disks.
+
+14. Problems writing files where the number of files was a multiple of
+    8 fixed. (v2.01 got the directory pointers wrong, so 8 files would
+    not be visible under QDOS). v2.1 got it wrong a different way :-).
+
+15. QLTools sets correct file date and updates file version when
+    writing.
+
+
+QLTools v2.2 Commands
+=====================
+
+The full command options for QLTools are:
+
+ qltools dev -opt <args>
+
+where 
+	dev is the device.
+
+	/dev/xxxx for Unix, for example
+	
+	/dev/fd0H720 (dd), /dev/fd0H1440 (hd) for Linux
+	fd=/dev/fd0H720
+	hd=/dev/fd0H1440
+	export fd
+	export hd
+	qltools $hd ..etc..
+
+	This is a: or b: for DOS and siblings (NT,OS/2,Win95 etc)
+
+	-opt <args> are command options.
+
+-t	Toggles translation of foreign names to QDOS/SMS. Default is on.
+
+-uN	Dump Cluster 'N' to stdout. N is 0-479 for dd, 0-959 for hd.
+
+-d	Verbose directory listing
+
+-dl	Verbose directory listing (includes deleted files)
+
+-s	Short listing (suitable for Unix scripts)
+
+-i	Return disk info
+
+-m	Display disk map
+
+-c	Display sector/cluster mapping table
+
+-nX[-Y]	Copy file number X [to file no. Y inclusive] to stdout. See
+	viewall.sh and qlcopy.pl scripts; the -n is optional if no
+        other options are given.
+
+-n file Copy file name 'file' to stdout
+
+-W files
+	Copy files to disk, no prompt for overwrite.
+-w files
+	Copy files to disk, prompt for overwrite, like TKII does.
+
+	Wildcards are supported where the shell provides wildcard
+        expansion (Unix).
+
+-l      lists wild card files as written to QDOS disk (-w, -W).
+
+-rX[-Y] Delete file number X [to file no. Y inclusive].
+
+-r file Delete file name 'file'.
+
+-xX N Set dataspace for file number X to N bytes
+
+-x file N
+	Set dataspace for file name 'file' to N bytes.
+
+-fXd name
+	Adds a QL format to a disk low-level formatted by DOS or Unix
+	(Linux fdformat).
+	Xd is dd for DD disk, hd for HD disks
+	name is the volume name
+
+Note the syntax for options -n,-r,-x. Where there is a space after the
+option, then what follows is assumed to be a single file name. Where
+the paramter follows immediately, it is assumed to be a file number or
+range.
+
+Qltools 2.1+ supports automatic setting of dataspace for executable
+files as follows.
+
+	Where the executable file has been created with a c68
+	cross-compiler (XTc68 for DOS, OS/2 or NT, Lux68 for Linux),
+	then the dataspace is set automatically in the file header.
+
+	Where normal QL executables are copied from a QDOS disk,
+	QLTools will append a XTc68 data block (8 bytes) to the end of
+	the file. When the executable is copied back to a QL disk,
+	then the dataspace is set from this block. Note that this
+	means that such files will experience a one off growth of 8
+	bytes. This minor increase in file size is considered
+	preferable (at least by JH) to the loss of such information.
+
+Examples
+========
+
+qltools $fd -W ~/tmp/*.c	Copies all *.c files from the tmp
+				sub-directory to a DD ql disk.
+				The . is stored as _, directory suffix
+				if disgarded. Any existing file is
+				overwritten.
+
+qltools $fd -t -w *.h		Copies all *.h files to a HD ql disk.
+				The . is stored as .
+				User is prompted for overwrite.
+
+qltools $hd -r10-15		Deletes file numbers 10 to 15
+				(inclusive)
+
+qltools $fd -fdd plugh		Formats QL DD disk with label "plugh"
+
+
+qltools $fd file_txt		Copies QL file 'file_txt' to stdout
+
+
+Supplied files
+==============
+
+changes			Changes to v1.6 (gz)
+copyright		Copyright from v1.6 (gz)
+examples		v1.6 examples (gz)
+format			Notes on QL disk format (pf)
+qlcopy.pl		Perl script to copy files to Unix (jh)
+qltools			qltools image for Linux (jh)
+qltools.c		qltools v2.1 (jh,rz,vo,gz)
+qltools.exe		qltools image for DOS,NT,OS2,Win95 (jh)
+qltools21.readme	Documentation for v2.1 (jh)
+readme			Documentation for v1.6 (gz)
+viewall.sh		Viewer sh script (gz)
+
+Credits are
+
+gz	Giuseppe Zanetti	(original author)
+vo	Valenti Omar
+rz	Richard Zidlicky
+jh	Jonathan Hudson
+
+Distribution conditions are vague, but generally GPL-ish. This is
+copyrighted free-ware.
+
+The following, at least, admit to having had something to do with this
+program.
+
+Giuseppe Zanetti  via Vergani, 11 - 35031 Abano Terme (Padova) ITALY
+e-mail: beppe@sabrina.dei.unipd.it
+Version 2.01:Valenti Omar, Via Statale 127, Casalgrande (RE)
+e-mail: sinf7@imovx2.unimo.it   sinf7@imoax1.unimo.it
+Version 2.02:Richard Zidlicky, rdzidlic@cip.informatik.uni-erlangen.de
+version 2.1: Jonathan Hudson, +968 699407 (voice/fax/data)
+version 2.2: Jonathan Hudson, +968 699407 (voice/fax/data)
+
+I (jh) am very grateful to gz,vo,rz for their work on this extremely
+useful program and making the software freely distributable.
+
+Disclaimer
+==========
+
+I have been able to test this mainly under Linux with DD disks. I know
+it can read DD disks written by a real QDOS compatible system, but at
+the time of writing, HD disks written by QLTools are untested on
+genuine hardware. The Linux version is compiled with gcc. The DOS et
+al version is a 16bit DOS image compiled with Watcom C/C++. It runs
+under DOS/NT/OS2/Win95.
+
+The authors are not responsible for any consequences of using this
+software, including the complete loss of all your data. You use this
+at your own risk.
+
+Bugs
+====
+
+Doesn't handle hard sub-directories. As I think I've worked out how
+these work, then the next release of QLtools may implement this.
+
+Considers the update field at offset 0x10 to be a long word. It
+appears that some disk drivers consider this to be short. This is a
+feature.
+
+Doesn't allow qdos/sms  file selection by wildcard, this would require
+escaping from the Unix shell.
+
+Doesn't allow wildcards in DOS and siblings. This is a limitation of
+DOS et al.
+
+Doesn't handle ED disks. This is not likely to be implemented.
+
+

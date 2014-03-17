@@ -1,0 +1,21 @@
+# qltools
+cc = wcl386
+
+OBJS = qltools.obj os2.obj wildargv.obj
+CFLAGS = -I\watcom\H\os2 -I. -bt=os2 -ox
+LDFLAGS = /l=os2v2
+
+qlos2.exe : $(OBJS)
+	$(CC) $(LDFLAGS) -fe=qlos2 $(OBJS)
+
+os2.obj : os2\os2.c qltools.h
+	$(CC) -c $(CFLAGS) os2\os2.c
+
+qltools.obj : qltools.c qltools.h
+	$(CC) -c $(CFLAGS) qltools.c
+
+wildargv.obj : \watcom\wildargv.c
+	$(CC) -c $(CFLAGS) \watcom\wildargv.c
+
+
+

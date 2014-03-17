@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+# Perl script to copy all files from a QL DD disk under Linux
+# _ in QDOS file names are changed to .
+# usage : qlcp device
+
+$dev = $ARGV[0];
+
+open (QL, "qltools $dev -s |");
+$n = 0;
+while (<QL>)
+{
+	chomp;
+	$unx = $_;
+	$unx =~ s/_/\./g;
+
+	if(substr($unx,0,1) eq " ")
+	{
+	    print "skipping .. ";
+
+	}
+	else
+	{
+	    system "qltools $dev $_ >$unx";
+	}
+	print "$unx\n";
+}
+close (QL);
+

@@ -1,0 +1,40 @@
+qltools 2.7:
+
+1. Internal (code) tidy up
+2. Compiled with highest optimisation levels
+3. displays file size on -l -w (or -l -W)
+
+This version of qltools 2.6 :
+
+1. Adds more sensible error messages when a sector is unreadable
+
+2. Correctly handles 'XTcc' data blocks on type 1 QDOS files.
+
+v2.5 of qltools
+
+1. Fixed corruption of files written to DOS_LIKE systems
+   (MSDOS,OS2,NT) caused by the output files being opened in text
+   mode.
+
+2. Writes zero bytes to the first 18K of the disk in an attempt
+   to prevent MSDOS from finding a secondary FAT.
+
+
+The manual is unchanged from "docs/qltools24.readme".
+
+The source code for qltools for all supported platforms (Unix,
+NT/Win95, OS2, MSDOS) is available in the linux archive.
+(qltools27.tgz)
+
+The most recent DOS/OS2/Win95/WinNT code is cross compiled with
+gcc. This allows long file names on W95 floppies. If you're running it
+under DOS, you need a DPMI server. The enclosed CWSCPMI.EXE will
+suffice; it needs to be on your PATH. Windows and OS2 provide DPMI
+services.
+
+
+Jonathan Hudson
+jrhudson@bigfoot.com
+
+v2.6 03/12/95
+v2.7 14/07/96

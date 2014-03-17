@@ -1,0 +1,51 @@
+Qltools: examples of use
+
+NOTE: In my Linux box (freddy) the 3"1/2 720K floppy drive is /dev/fd0H720
+
+- Listing a ql floppy directory
+
+qltools /dev/fd0H720 -d
+
+- Read the 5th file in the directory to console
+
+qltools /dev/fd0H720 -n5
+
+- Read the file named "abcd_c" to console
+
+qltools /dev/fd0H720 abcd_c
+
+- Read a file with pause (under unix only)
+
+qltools /dev/fd0H720 my_file_txt | more
+
+- Copy a file named "test_doc" to a unix file
+
+qltools /dev/fd0H720 test_doc > test_doc
+
+- Read a disk map
+
+qltools /dev/fd0H720 -m
+
+- List disk info
+
+qltools /dev/fd0H720 -i
+
+- Read some files under UNIX (a trick with the UNIX shell)
+
+for i in file1 file2 file3 file4 file5
+do
+	qltools /dev/fd0H720 $i > $i
+done
+
+- Making a disk image under UNIX and use it as a QL floppy image
+
+dd if=/dev/fd0H720 of=image
+
+qltools image -d
+
+- Using a UNIX shell variable for the floppy name
+
+flp1=/dev/fd0H720
+
+qltools $flp1 -d
+

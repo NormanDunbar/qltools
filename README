@@ -1,0 +1,19 @@
+qltools 2.1x
+
+Thanks to Frederic van der Plancke (fvdp@decis.be) for debugging
+assistance with NT.
+
+Install on your PATH
+
+	Linux	: Unix/qltools	
+	WinNT   : NT/qltools
+	Win95   : msdos/qltools
+
+
+28/10/98 v2.11. Resolve time_t differences on DOS/NT platforms
+17/10/99 v2.12  Kill some horrid, fatal memory problems and leaks
+--/10/99 v2.13	Internal, not released
+06/11/99 v2.14  Support for wxqt2
+
+(c) Jonathan Hudson 1998-99
+jrhudson@bigfoot.com

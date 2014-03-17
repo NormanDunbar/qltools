@@ -1,0 +1,87 @@
+** what is qltools ? **
+
+       This is qltools, a simple tool for manipulating QL files.
+
+** compiling qltools **
+
+       cc -o qltools qltools.c
+
+       under MSDOS and Turbo C: tcc -DMSDOS -o qltools qltools.c
+
+** development **
+
+Qltools was developed under linux 0.98, the free OS for i386 with gcc 2.2.2,
+the gnu c compiler (also free). I use only PD and shareware software and
+have not any problem. Since some software is better than some commercial
+software. A reliable "pubblic domain workstation" costs only the money for the
+hardware and is comparable with a commercial system.
+
+** porting **
+
+Since qltools is a portable program. It compile ok under:
+
+       - linux (0.96c and gcc 2.2.2, 0.98pl1 and gcc 2.2.2d)
+
+       - SUN 4 (Sparc Station 2, SLC and IPC, SparcServer 830 Multiprocessor)
+
+       - HP9000/825 under HP/UX 7.00 and HP/UX 8.00
+
+       - MS-DOS 5.0 and Turbo C++ 1.00
+
+       and, but not compiled myself:
+
+       - NeXT
+
+       - RS3000
+
+       - It compiles ok also on the Macintosh platform under the Think C
+         environment provided you use libraries compiled with 4 byte ints
+         and the 4 byte int option turned on (Roberto Avanzi).
+
+         (for Mac related questions ask Roberto Avanzi at the e-mail address
+         <gandalf@sabrina.dei.unipd.it>
+
+       - A amiga port is possible with a BSD compatibility box and a raw
+         drive device.
+
+                                               Giuseppe Zanetti
+
+** Tanks **
+
+        Tanks to all QL users that encourage me and help me !!!
+        (Please, write to me if you are a contributor but your name is not here)
+
+        - Tank'you to Paul Foley for the support and the documentation.
+
+        - Think C (Apple Mac) adaption:
+          Roberto Avanzi <gandalf@sabrina.dei.unipd.it>
+          via Luigi Balzan 12 - 45100 Rovigo ITALY
+
+        - qltools 1.4 patches:
+          Scott Telford <st@epcc.edinburgh.ac.uk>
+          - Improved error messages
+          - Qdos level 2 device subdirectories (file type 255) are now
+            recognised in the directory listing (indicated by a "->" like
+            the level 2 WSTAT.
+          - Unrecognised file types have their type number printed.
+          - Empty directory entries (length=0) are skipped in the directory
+            listing.
+
+        - support and distribution
+          Davide Santachiara (ERGON DEVELOPMENT)
+
+** my english **
+
+          is very very bad ! Sorry !
+
+--
+
+       (c)1992 by Giuseppe Zanetti
+
+       Giuseppe Zanetti
+       via Vergani, 11 - 35031 Abano Terme (Padova) ITALY
+       e-mail: beppe@sabrina.dei.unipd.it
+
+       This is copyrighted software, but freely distributable.
+
+

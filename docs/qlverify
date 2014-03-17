@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+# Perl script to copy all files from a QL DD disk under Linux
+# _ in QDOS file names are changed to .
+print "$ARGV[0]\n";
+open (QL, "qltools $ARGV[0] -s |");
+
+while (<QL>)
+{
+    print;
+    chomp;
+    $unx = $_;
+    $unx =~ s/_/\./g;
+    system "qltools $ARGV[0] $_ >/dev/nul\n";
+}
+close (QL);
+

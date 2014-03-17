@@ -1,0 +1,80 @@
+QL disks Format by Paul Foley
+
+	What exactly do you want to know?  I don't know about the
+3.2MB format, but I can tell you about 720k.  Allocation blocks are 3
+sectors long (normally.  This can be changed) and the block 0
+(consisting of sectors 0, 3 and 6 of side 0 on cylinder 0) contains
+the mapping info.  The first 96 bytes are used as follows:
+       OFFSET  SIZE		   VALUE
+	$00	.L		$514C3541
+	$04	10 bytes	disk label
+	$0E	.W		random number (created by FORMAT)
+	$10	.L		#writes to this disk
+	$14	.W		#free sectors
+	$16	.W		#good sectors
+	$18	.W		total sectors
+	$1A	.W		#sectors per track (9)
+	$1C	.W		#sectors per cylinder (18 for DS)
+	$1E	.W		number of cylinders (80)
+	$20	.W		size of allocation block (3)
+	$22	.W		block number for end-of-directory
+	$24	.W		byte number of end-of-directory
+	$26	.W		sector offset/cylinder
+	$28	18 bytes	logical-to-physical sector mapping table
+	$3A	18 bytes	physical-to-logical sector mapping table
+	$4C	20 bytes	unused
+
+The rest of the block consists of pairs of 12-bit values (24 bits for
+each block on a fully formatted, 80 track, double sided disk) the
+first of which contains the file number which that block belongs to,
+the seconds holds the position of this block within that file.  Some
+special file numbers are used for the mapping block itself ($F80),
+unused blocks ($FDF), bad blocks ($FEF) and non-existant blocks ($FFF)
+and the block-number of unused, bad and non-existant blocks is always
+$FFF (but when a file is deleted, only the top byte is set to $FD)
+the map is $F80 000 - it consists of one block!  The directory
+is file number $000, and all other files have numbers corresponding to
+their positions in the directory (file $001 is the first, $002 is the
+second, etc.)
+	The "logical-to-physical sector mapping table" contains a byte
+for each sector on a cylinder (18) corresponding to the physical
+sector number (0 to 8, with the MSB set for sectors on side 1) for
+each logical file sector.  This table is always "0 3 6 128 131 134 1 4
+7 129 132 135 2 5 8 130 133 136" (unless someone has changed it)
+meaning sectors 0, 3, 6 of side 0 are used first, then sectors 0, 3, 6
+of side 1, then sectors 1, 4, 7 of side 0, etc.  _BUT_ the sector
+number is offset by an amount depending on the cylinder number (the
+numbers above are correct for cylinder 0, but the "sector
+offset/track" value is added (mod 9) for each cylinder.  This value is
+usually 5, so the table values are correct again at cylinder 9)
+	The "physical-to-logical sector mapping table" contains 9
+entries for each side of the disk, containing the logical sector
+numbers of the physical sectors on the disk.  It is "0 6 12 1 7 13 2 8
+14" for side 0 and "3 9 15 4 1 16 5 11 17" for side 1 (that is, for
+side 0, phys. sector 0 contains log. sector 0, phys. sector 1 contains
+log. sector 6, ...) again, this is affected by the "sector
+offset/track".
+
+	The directory consists of 64 '0's ($30 bytes, not $00 bytes.
+I don't know what they're for) followed by a 64 byte entry for each
+file, in the following format:
+       OFFSET  SIZE		   USE
+	$00	.L		file length
+	$04	.B		unused
+	$05	.B		file type
+	$06	.L		dataspace (for exec'able programs)
+	$0A	.L		unused
+	$0E	.W		length of file name
+	$10	36 bytes	file name
+	$34	.L		file update date
+	$38	.L		unused.  Supposed to be reference date.
+	$3C	.L		unused.  Supposed to be backup date.
+
+The first 64 bytes in the first block of each file contains a copy of
+the directory entry, but most of the information in it is not correct
+(the name is OK, though)
+
+	Hope that helps.
+
+							- Paul
+
