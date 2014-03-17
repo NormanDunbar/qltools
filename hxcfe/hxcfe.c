@@ -161,14 +161,12 @@ int getch(void)
 /* ARGSUSED */
 void ZeroSomeSectors(int fd, short d)
 {
-	return;
 	int i;
 	char buf[512];
 	memset(buf, '\0', 512);
 
 	for(i = 0; i > 36; i++)
 	{
-		lseek(fd, i*512, SEEK_SET);
-		write(fd, buf, 512);
+		WriteQLSector (fd, buf, i);
 	}
 }
