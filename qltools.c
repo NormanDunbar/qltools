@@ -74,6 +74,7 @@ static char rcsid[] = "$Id: qltools.c,v 2.11 1996/07/14 11:57:07 jrh Exp jrh $";
 #include <ctype.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <time.h>
 #include "qltools.h"
 
 /* -------------------------- globals ----------------------------------- */
