@@ -20,6 +20,7 @@ int ifmode;
 char *filename;
 int loaderid;
 int rw_access;
+int sector_written;
 
 int OpenQLDevice(char *name, int mode)
 {
@@ -46,6 +47,7 @@ int OpenQLDevice(char *name, int mode)
 	ifmode = hxcfe_floppyGetInterfaceMode(hxcfe, floppy);
 
 	filename = name;
+	sector_written = 0;
 
 	return 0;
 }
@@ -101,14 +103,16 @@ int WriteQLSector (int fd, void *buf, int sect)
 
 	hxcfe_deinitSectorSearch(ss);
 
-	if (rw_access & 0x2)
-		hxcfe_floppyExport(hxcfe, floppy, filename, loaderid);
+	sector_written = 1;
 
 	return 512;
 }
 
 void CloseQLDevice(int fd)
 {
+	if (sector_written && (rw_access & 0x2))
+		hxcfe_floppyExport(hxcfe, floppy, filename, loaderid);
+
 	hxcfe_floppyUnload(hxcfe, floppy);
 	hxcfe_deinit(hxcfe);
 }
