@@ -112,6 +112,8 @@ void CloseQLDevice(int fd)
 {
 	if (sector_written && (rw_access & 0x2))
 		hxcfe_floppyExport(hxcfe, floppy, filename, loaderid);
+	else if (sector_written)
+		printf("This was not a libhxcfe writable format\n");
 
 	hxcfe_floppyUnload(hxcfe, floppy);
 	hxcfe_deinit(hxcfe);
