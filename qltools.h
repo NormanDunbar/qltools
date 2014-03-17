@@ -1,6 +1,7 @@
 #ifdef __unix__
 # include <sys/time.h>
 # include <unistd.h>
+# include <stdint.h>
 #else
 # define NEED_DEFS
 # if defined (__VMS) || defined(__ALPHA) || defined(VMS) 
@@ -95,17 +96,17 @@ typedef HFILE HANDLE;
 
 typedef struct
 {
-    long d_length;		/* file length */
+    int32_t d_length;		/* file length */
     unsigned char d_access;	/* file access type */
     unsigned char d_type;	/* file type */
-    long d_datalen PACKED;	/* data length */
-    long d_reserved PACKED;	/* Unused */
+    int32_t d_datalen PACKED;	/* data length */
+    int32_t d_reserved PACKED;	/* Unused */
     short d_szname;		/* size of name */
     char d_name[36];		/* name area */
-    long d_update PACKED;	/* last update */
+    int32_t d_update PACKED;	/* last update */
     short d_version;
     short d_fileno;
-    long d_backup;
+    int32_t d_backup;
 } QLDIR;
 
 typedef struct
@@ -113,7 +114,7 @@ typedef struct
     char q5a_id[4];
     unchar q5a_mnam[10];
     ushort q5a_rand;
-    ulong q5a_mupd;
+    uint32_t q5a_mupd;
     ushort q5a_free;
     ushort q5a_good;
     ushort q5a_totl;
