@@ -33,3 +33,12 @@ unix:
 
 hxcfe:
 	make EXE_EXT=$(EXE_EXT) -C Hxcfe
+
+clean:
+	-rm Unix/*.o
+	-rm Hxcfe/*.o
+	-rm Unix/qltools
+	-rm Unix/qltools.exe
+	-rm Hxcfe/qltools-hxcfe
+	-rm Hxcfe/qltools-hxcfe.exe
+

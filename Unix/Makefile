@@ -10,5 +10,8 @@ $(TARGET) : $(OBJS)
 linux.o : linux.c 
 	$(CC) -c $(CFLAGS) linux.c
 
+qltools.o : ../qltools.c
+	$(CC) -c $(CFLAGS) $<
+
 $(OBJS) : $(HDR)/qltools.h
 
