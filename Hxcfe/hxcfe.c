@@ -6,11 +6,8 @@
 #include <ctype.h>
 #include <time.h>
 #include <ctype.h>
-#include <termios.h>
 #include <sys/time.h>
 #include <libhxcfe.h>
-
-#define BITSON ( ~0 )
 
 #include "qltools.h"
 
@@ -30,14 +27,27 @@ int OpenQLDevice(char *name, int mode)
 	//hxcfe_setOutputFunc(hxcfe, &CUI_affiche);
 
 	loaderid = hxcfe_autoSelectLoader(hxcfe, name, 0);
+	if (loaderid < 0) {
+		printf("Loader ID returned error %d\n", loaderid);
+		hxcfe_deinit(hxcfe);
+		return -1;
+	}
 
 	rw_access = hxcfe_getLoaderAccess(hxcfe, loaderid);
 
 	floppy = hxcfe_floppyLoad(hxcfe, name, loaderid, &err);
+	if (!floppy) {
+		printf("Failed to load image\n");
+		return -1;
+	}
 
 	hxcfe_getFloppySize(hxcfe, floppy, &sectors);
 
-	if ((sectors != 1440) && (sectors != 2880)) {
+	/*
+	 * 1600 -> 10Sectors per track : Ql trump board seems to put an unused
+	 * sector at the head of the track... (Jeff_HxC2001)
+	 */
+	if ((sectors != 1440) && (sectors != 2880) && (sectors != 1600)) {
 		hxcfe_floppyUnload(hxcfe, floppy);
 		hxcfe_deinit(hxcfe);
 
