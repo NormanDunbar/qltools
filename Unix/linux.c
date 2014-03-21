@@ -6,7 +6,6 @@
 #include <ctype.h>
 #include <time.h>
 #include <ctype.h>
-#include <termios.h>
 #include <sys/time.h>
 
 #define BITSON ( ~0 )
@@ -57,38 +56,6 @@ time_t GetTimeZone(void)
 
     gettimeofday (&tv, &tz);
     return  -60 * tz.tz_minuteswest;
-}
-
-static void rl_ttyset (int Reset)
-{
-    static struct termios old;
-    struct termios new;
-
-    if (Reset == 0)
-    {
-	(void) tcgetattr (0, &old);
-	new = old;
-	new.c_cc[VINTR] = BITSON;
-	new.c_cc[VQUIT] = BITSON;
-	new.c_lflag &= ~(ECHO | ICANON);
-	new.c_iflag &= ~(ISTRIP | INPCK);
-	new.c_cc[VMIN] = 1;
-	new.c_cc[VTIME] = 0;
-	(void) tcsetattr (0, TCSANOW, &new);
-    }
-    else
-	(void) tcsetattr (0, TCSANOW, &old);
-}
-
-int getch(void)
-{
-    char c;
-    rl_ttyset (0);
-    read (0, &c, 1);
-    write(1, &c, 1);
-    write(1, "\b", 1);
-    rl_ttyset (1);
-    return (int)c;
 }
 
 /* ARGSUSED */
