@@ -1,79 +1,11 @@
-#ifdef __unix__
-# include <sys/time.h>
-# include <unistd.h>
-# include <stdint.h>
-#else
-# define NEED_DEFS
-# if defined (__VMS) || defined(__ALPHA) || defined(VMS) 
-# ifndef __DECC
-#  error "You need a real 'C' compiler"
-# endif
-# include <sys/time.h>
-# include <unixio.h>
-# include <fcntl.h>
-# define FDNAME "diskimage"
-# ifdef __ALPHA
-#  define OSNAME "Alpha-AXP"
-# else
-#  define OSNAME "VAX-VMS"
-# endif
-# else
-#  include <conio.h>
-#  include <io.h>
-#  include <malloc.h>
-#  include <time.h>
-#  endif
-#endif
-#if defined(NEED_DEFS) || defined (__GO32__)
- typedef unsigned char unchar;
- typedef unsigned short ushort;
- typedef unsigned long ulong;
-# define inline
-#endif
+#include <sys/time.h>
+#include <unistd.h>
+#include <stdint.h>
 
-#ifdef __NT__
-#include <windows.h>
-#define OSNAME "Windows NT"
-#define FDNAME "\\\\.\\a:"
-#define DOS_LIKE
-#endif
+#define OSNAME "Linux/win32"
+#define FDNAME "diskimage"
 
-#ifdef __OS2__
-#include <os2.h>
-typedef HFILE HANDLE;
-#define OSNAME "OS/2"
-#define FDNAME "a:"
-#define DOS_LIKE
-#else
-# ifndef __NT__
- typedef int HANDLE;
- #endif
-#endif
-
-#ifdef __GO32__
-# define OSNAME "DOS/WIN"
-# ifndef FDNAME
-#  define FDNAME "a:"
-# endif
-#else
-# ifdef __unix__
-#  ifdef __linux__
-#   define OSNAME "Linux"
-    typedef unsigned char unchar;
-#  else
-#   define OSNAME "Unix"
-#  endif
-#  define FDNAME "/dev/fd0H720"
-# else
-#  ifndef OSNAME
-#   define OSNAME "MSDOS"
-#   define DOS_LIKE
-#  endif
-#  ifndef FDNAME
-#   define FDNAME "a:"
-#  endif
-# endif
-#endif
+typedef int HANDLE;
 
 #define TIME_DIFF    283996800
 #define VERSION     "2.14, " __DATE__
@@ -83,59 +15,58 @@ typedef HFILE HANDLE;
 
 /* Maximum number of sectors (norm. 1440) */
 #define MAXSECT         2880
-#ifndef __MINGW32__
+
 #if defined __GNUC__
-#define PACKED  __attribute__ ((packed))
+#define PACKED  __attribute__((gcc_struct, packed))
 #else
 #define PACKED
-#endif
 #endif
 
 #define GSSIZE 512
 #define DIRSBLK 8
 
-typedef struct
+typedef struct PACKED
 {
     int32_t d_length;		/* file length */
     unsigned char d_access;	/* file access type */
     unsigned char d_type;	/* file type */
-    int32_t d_datalen PACKED;	/* data length */
-    int32_t d_reserved PACKED;	/* Unused */
+    int32_t d_datalen;	/* data length */
+    int32_t d_reserved;	/* Unused */
     short d_szname;		/* size of name */
     char d_name[36];		/* name area */
-    int32_t d_update PACKED;	/* last update */
+    int32_t d_update;	/* last update */
     short d_version;
     short d_fileno;
     int32_t d_backup;
 } QLDIR;
 
-typedef struct
+typedef struct PACKED
 {
     char q5a_id[4];
-    unchar q5a_mnam[10];
-    ushort q5a_rand;
+    uint8_t q5a_mnam[10];
+    uint16_t q5a_rand;
     uint32_t q5a_mupd;
-    ushort q5a_free;
-    ushort q5a_good;
-    ushort q5a_totl;
-    ushort q5a_strk;
-    ushort q5a_scyl;
-    ushort q5a_trak;
-    ushort q5a_allc;
-    ushort q5a_eodbl;
-    ushort q5a_eodby;
-    ushort q5a_soff;
-    unchar q5a_lgph[18];
-    unchar q5a_phlg[18];
-    unchar q5a_spr0[20];
-    unchar map[1];
+    uint16_t q5a_free;
+    uint16_t q5a_good;
+    uint16_t q5a_totl;
+    uint16_t q5a_strk;
+    uint16_t q5a_scyl;
+    uint16_t q5a_trak;
+    uint16_t q5a_allc;
+    uint16_t q5a_eodbl;
+    uint16_t q5a_eodby;
+    uint16_t q5a_soff;
+    uint8_t q5a_lgph[18];
+    uint8_t q5a_phlg[18];
+    uint8_t q5a_spr0[20];
+    uint8_t map[1];
 } BLOCK0;
 
 typedef struct __sdl__
 {
     struct __sdl__ *next;
-    ulong flen;
-    ushort fileno;
+    uint32_t flen;
+    uint16_t fileno;
     short szname;
     char name[36];
 } SDL;

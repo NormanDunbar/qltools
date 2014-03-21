@@ -135,56 +135,56 @@ void *xmalloc (long alot)
 
 /* --------------------- byte order conversion --------------------------- */
 
-ushort inline swapword (ushort val)
+uint16_t swapword (uint16_t val)
 {
-    return (ushort) (val << 8) + (val >> 8);
+    return (uint16_t) (val << 8) + (val >> 8);
 }
 
-ulong inline swaplong (ulong val)
+uint32_t swaplong (uint32_t val)
 {
-    return (ulong) (((ulong) swapword (val & 0xFFFF) << 16) |
-		    (ulong) swapword (val >> 16));
+    return (uint32_t) (((uint32_t) swapword (val & 0xFFFF) << 16) |
+		    (uint32_t) swapword (val >> 16));
 }
 
-static inline int maxdir (void)
+static int maxdir (void)
 {
     return (byeod >> 6) + (bleod * DIRSBLK);
 }
 
-ushort inline fat_file (ushort cluster)
+uint16_t fat_file (uint16_t cluster)
 {
-    unchar *base = b0->map + cluster * 3;
+    uint8_t *base = b0->map + cluster * 3;
 
-    return (ushort) (*base << 4) + (ushort) ((*(base + 1) >> 4) & 15);
+    return (uint16_t) (*base << 4) + (uint16_t) ((*(base + 1) >> 4) & 15);
 }
 
-ushort inline fat_cl (ushort cluster)
+uint16_t fat_cl (uint16_t cluster)
 {
-    unchar *base = b0->map + cluster * 3;
+    uint8_t *base = b0->map + cluster * 3;
 
     return (*(base + 1) & 15) * 256 + *(base + 2);
 }
 
-void inline set_fat_file (ushort cluster, ushort file)
+void set_fat_file (uint16_t cluster, uint16_t file)
 {
-    unchar *base = b0->map + cluster * 3;
+    uint8_t *base = b0->map + cluster * 3;
 
     *base = file >> 4;
     *(base + 1) = ((file & 15) << 4) | (*(base + 1) & 15);
 }
 
-void inline set_fat_cl (ushort cluster, ushort clnum)
+void set_fat_cl (uint16_t cluster, uint16_t clnum)
 {
-    unchar *base = b0->map + cluster * 3;
+    uint8_t *base = b0->map + cluster * 3;
 
     *(base + 1) = (clnum >> 8) | (*(base + 1) & (~15));
     *(base + 2) = clnum & 255;
 }
 
 
-ushort inline FileXDir(ushort fnum)
+uint16_t FileXDir(uint16_t fnum)
 {
-    ushort fno = 0;
+    uint16_t fno = 0;
     if(fnum)
     {
 	fno = swapword(fnum) - 1;
@@ -192,7 +192,7 @@ ushort inline FileXDir(ushort fnum)
     return fno;
 }
 
-inline QLDIR *GetEntry (int fn)
+QLDIR *GetEntry (int fn)
 {
     QLDIR *entry;
 
@@ -207,9 +207,9 @@ inline QLDIR *GetEntry (int fn)
     return entry;
 }
 
-short FindCluster (ushort fnum, ushort blkno)
+short FindCluster (uint16_t fnum, uint16_t blkno)
 {
-    ushort file, blk;
+    uint16_t file, blk;
     short i;
 
     for (i = 0; i < gclusters; i++)
@@ -322,7 +322,7 @@ void UpdateSubEntry (QLDIR * entry, SDL * sdl, short *off)
     int rval = 0;
     long flen = sdl->flen;
     short fnum = sdl->fileno;
-    unchar *buffer = xmalloc (GSSIZE * allocblock);
+    uint8_t *buffer = xmalloc (GSSIZE * allocblock);
 
     if (off)
     {
@@ -486,7 +486,7 @@ void del_file (long fnum, QLDIR * entry, SDL * sdl)
 
     if (blk0 > 0)
     {
-	unchar *b = xmalloc (512 * allocblock);
+	uint8_t *b = xmalloc (512 * allocblock);
 
 	read_cluster (b, blk0);
 	memcpy (b, entry, 64);
@@ -576,7 +576,7 @@ int RecurseDir (int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void
 
     if (flen > 64)
     {
-	unchar *buffer = xmalloc (GSSIZE * allocblock);
+	uint8_t *buffer = xmalloc (GSSIZE * allocblock);
 
 	for (s = 0; s <= flen / (GSSIZE * allocblock); s++)
 	{
@@ -862,7 +862,7 @@ void write_b0fat (void)
 
     for (i = 0; fat_file (i) == 0xf80; i++)
     {
-	write_cluster ((unchar *) b0 + i * allocblock * GSSIZE, i);
+	write_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
     }
 }
 
@@ -872,7 +872,7 @@ void read_fat (void)
     int i;
 
     for (i = 0; fat_file (i) == 0xf80; i++)
-	read_cluster ((unchar *) b0 + i * allocblock * GSSIZE, i);
+	read_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
 }
 
 short CheckFileName (QLDIR * ent, char *fname)
@@ -1035,11 +1035,11 @@ SDL *CheckDirLevel (char *qlnam, short n)
     return sl;
 }
 
-int AllocNewSubDirCluster (long flen, ushort fileno)
+int AllocNewSubDirCluster (long flen, uint16_t fileno)
 {
     short i;
     short seqno;
-    unchar *p;
+    uint8_t *p;
 
     seqno = flen / (GSSIZE * allocblock);
 
@@ -1168,11 +1168,11 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs)
                 strncasecmp(entry->d_name, fs->nde->d_name, n) == 0 && 
                 *(entry->d_name + n) == '_')
     {
-	    ushort dcl, fcl;
+	    uint16_t dcl, fcl;
 	    QLDIR nent;
 	    SDL *nsdl;
 	    short i;
-	    unchar *buf;
+	    uint8_t *buf;
 	    long cwdlen;
             
 	    fcl = FindCluster(fileno, 0);
@@ -1249,7 +1249,7 @@ int MoveSubFiles(FSBLK *fs)
 
 void writefile (char *fn, short dflag)
 {
-    unchar *datbuf;
+    uint8_t *datbuf;
     int filenew, i, fl;
     QLDIR *entry;
     unsigned long free_sect;
@@ -1625,7 +1625,7 @@ void print_map (void)
 void set_header (int ni, long h, QLDIR * entry, SDL * sdl)
 {
     int i;
-    unchar *b = xmalloc (allocblock * 512);
+    uint8_t *b = xmalloc (allocblock * 512);
 
     if (swaplong (entry->d_length) + swapword (entry->d_szname) == 0)
     {
