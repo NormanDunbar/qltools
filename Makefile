@@ -22,34 +22,8 @@
 ################################################################
 
 
-ifeq ($(OSTYPE),cygwin32)
-	DIR=NT
-else	
-	DIR=Unix	
-endif
-
-all: domake
-
-domake:
-	cd $(DIR) ; $(MAKE) 
-
-
 unix:	
-	cd Unix ; $(MAKE)
+	make -C Unix
 
-nt:
-	cd NT ;  $(MAKE)
-
-dos:
-	cd msdos ; $(MAKE)
-
-clean:
-	-rm -f *~
-	-rm -f '#*#'
-	cd $(DIR) ; $(MAKE) clean 
-
-realclean:
-	-rm -f *~
-	-rm -f '#*#'
-	cd $(DIR) ; $(MAKE) realclean 
-
+hxcfe:
+	make -C hxcfe
