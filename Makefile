@@ -21,9 +21,15 @@
 # 
 ################################################################
 
+SYS := $(shell $(CC) -dumpmachine)
+ifneq (, $(findstring linux, $(SYS)))
+	EXE_EXT:=
+else ifneq (, $(findstring mingw, $(SYS)))
+	EXE_EXT:=.exe
+endif
 
 unix:	
-	make -C Unix
+	make EXE_EXT=$(EXE_EXT) -C Unix
 
 hxcfe:
-	make -C hxcfe
+	make EXE_EXT=$(EXE_EXT) -C Hxcfe
