@@ -1,5 +1,13 @@
 *.o
 
 Unix/qltools
-hxcfe/qltools
+Hxcfe/qltools-hxcfe
+
+*.exe
+*.HFE
+*.hfe
+*.img
+*.IMG
+*.dll
+*.zip
 
