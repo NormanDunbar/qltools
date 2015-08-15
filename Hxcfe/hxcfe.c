@@ -7,12 +7,14 @@
 #include <time.h>
 #include <ctype.h>
 #include <sys/time.h>
+#include <stdint.h>
 #include <libhxcfe.h>
 
 #include "qltools.h"
 
-FLOPPY *floppy;
-HXCFLOPPYEMULATOR *hxcfe;
+HXCFE_FLOPPY *floppy;
+HXCFE_IMGLDR *imgldr_ctx;
+HXCFE *hxcfe;
 int ifmode;
 char *filename;
 int loaderid;
@@ -24,18 +26,19 @@ int OpenQLDevice(char *name, int mode)
 	int sectors, err;
 
 	hxcfe = hxcfe_init();
-	//hxcfe_setOutputFunc(hxcfe, &CUI_affiche);
-
-	loaderid = hxcfe_autoSelectLoader(hxcfe, name, 0);
+	imgldr_ctx = hxcfe_imgInitLoader(hxcfe);
+	printf("Name %s\n", name);
+	loaderid = hxcfe_imgAutoSetectLoader(imgldr_ctx, name, 0);
 	if (loaderid < 0) {
 		printf("Loader ID returned error %d\n", loaderid);
+		hxcfe_imgDeInitLoader(imgldr_ctx);
 		hxcfe_deinit(hxcfe);
 		return -1;
 	}
 
-	rw_access = hxcfe_getLoaderAccess(hxcfe, loaderid);
+	rw_access = hxcfe_imgGetLoaderAccess(imgldr_ctx, loaderid);
 
-	floppy = hxcfe_floppyLoad(hxcfe, name, loaderid, &err);
+	floppy = hxcfe_imgLoad(imgldr_ctx, name, loaderid, &err);
 	if (!floppy) {
 		printf("Failed to load image\n");
 		return -1;
@@ -48,7 +51,8 @@ int OpenQLDevice(char *name, int mode)
 	 * sector at the head of the track... (Jeff_HxC2001)
 	 */
 	if ((sectors != 1440) && (sectors != 2880) && (sectors != 1600)) {
-		hxcfe_floppyUnload(hxcfe, floppy);
+		hxcfe_imgUnload(hxcfe, floppy);
+		hxcfe_imgDeInitLoader(imgldr_ctx);
 		hxcfe_deinit(hxcfe);
 
 		return -1;
@@ -64,13 +68,13 @@ int OpenQLDevice(char *name, int mode)
 
 int ReadQLSector(int fd, void *buf, int sect)
 {
-	SECTORSEARCH *ss;
+	HXCFE_SECTORACCESS *ss;
 	int status;
-	
+
 	int track, side, sector;
 
-	ss = hxcfe_initSectorSearch(hxcfe, floppy);
-	
+	ss = hxcfe_initSectorAccess(hxcfe, floppy);
+
 	if (!sect) {
 		track = 0;
 		side = 0;
@@ -84,20 +88,20 @@ int ReadQLSector(int fd, void *buf, int sect)
 	hxcfe_readSectorData(ss, track, side, sector,1, GSSIZE,
 			ISOIBM_MFM_ENCODING, buf, &status);
 
-	hxcfe_deinitSectorSearch(ss);
+	hxcfe_deinitSectorAccess(ss);
 
 	return 512;
 }
 
 int WriteQLSector (int fd, void *buf, int sect)
 {
-	SECTORSEARCH *ss;
+	HXCFE_SECTORACCESS *ss;
 	int status;
-	
+
 	int track, side, sector;
 
-	ss = hxcfe_initSectorSearch(hxcfe, floppy);
-	
+	ss = hxcfe_initSectorAccess(hxcfe, floppy);
+
 	if (!sect) {
 		track = 0;
 		side = 0;
@@ -111,7 +115,7 @@ int WriteQLSector (int fd, void *buf, int sect)
 	hxcfe_writeSectorData(ss, track, side, sector,1, GSSIZE,
 			ISOIBM_MFM_ENCODING, buf, &status);
 
-	hxcfe_deinitSectorSearch(ss);
+	hxcfe_deinitSectorAccess(ss);
 
 	sector_written = 1;
 
@@ -121,11 +125,12 @@ int WriteQLSector (int fd, void *buf, int sect)
 void CloseQLDevice(int fd)
 {
 	if (sector_written && (rw_access & 0x2))
-		hxcfe_floppyExport(hxcfe, floppy, filename, loaderid);
+		hxcfe_imgExport(hxcfe, floppy, filename, loaderid);
 	else if (sector_written)
 		printf("This was not a libhxcfe writable format\n");
 
 	hxcfe_floppyUnload(hxcfe, floppy);
+	hxcfe_imgDeInitLoader(imgldr_ctx);
 	hxcfe_deinit(hxcfe);
 }
 
