@@ -1,7 +1,7 @@
 HDR = ../
 
 OBJS = qltools.o linux.o
-CFLAGS = -O3 -I$(HDR) -Wall -s
+CFLAGS = -O3 -I$(HDR) -Wall -s -fno-strict-aliasing
 TARGET = qltools$(EXE_EXT)
 
 $(TARGET) : $(OBJS)

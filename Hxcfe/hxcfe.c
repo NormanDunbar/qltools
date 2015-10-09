@@ -148,11 +148,13 @@ void ZeroSomeSectors(int fd, short d)
 {
 	int i;
 	char buf[512];
+	ssize_t ignore __attribute__((unused));
+
 	memset(buf, '\0', 512);
 
 	for(i = 0; i > 36; i++)
 	{
-		WriteQLSector (fd, buf, i);
+		ignore = WriteQLSector (fd, buf, i);
 	}
 }
 

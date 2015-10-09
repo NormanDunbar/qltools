@@ -8,7 +8,7 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.14, " __DATE__
+#define VERSION     "2.15, " __DATE__
 
 /* Maximum allocation block (normally 3) */
 #define MAXALB          6
