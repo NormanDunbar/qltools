@@ -16,7 +16,7 @@ Install on your PATH
 06/11/1999 v2.14  Support for wxqt2
 09/10/2015 v2.15  Updated to remove c99 warnings about unused variables, ignored
                   return values from read() and write() and wrong printf specifiers
-                  for uint32_t variables. Changes marked ND09102015. 
+                  for uint32_t variables. 
 
 (c) Jonathan Hudson 1998-99
 jrhudson@bigfoot.com

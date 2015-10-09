@@ -1,7 +1,6 @@
 HDR = ../
 
 OBJS = qltools.o linux.o
-# Added -fno-strict-aliasing to avoid type punning warnings. ND09102015.
 CFLAGS = -O3 -I$(HDR) -Wall -s -fno-strict-aliasing
 TARGET = qltools$(EXE_EXT)
 
