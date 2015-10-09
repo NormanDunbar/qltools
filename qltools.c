@@ -821,19 +821,13 @@ void write_cluster (void *p, int num)
 
 void read_b0fat (int argconv)
 {
-    static const union
-    {
-	char c[4];
-	long l;
-    }
-    ql5 = {"QL5"};
-
     err = ReadQLSector (fd, b0, 0);
 
-    if ((*((long *) b0->q5a_id) & 0xffffff) != ql5.l)
+    if (strncmp((char *)b0->q5a_id, "QL5", 3))
     {
-	fprintf (stderr, "\nNot an SMS disk %.4s %lx !!!\n",
-		 b0->q5a_id, *(long *) b0->q5a_id);
+	fprintf (stderr, "\nNot an SMS disk %.4s %2.2x:%2.2x:%2.2x:%2.2x !!!\n",
+		 b0->q5a_id, b0->q5a_id[0], b0->q5a_id[1], b0->q5a_id[2],
+		 b0->q5a_id[3]);
 	exit (ENODEV);
     }
 
