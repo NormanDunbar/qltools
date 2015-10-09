@@ -1871,7 +1871,7 @@ int main (int ac, char **av)
 
     pd = av[1];
     
-#ifdef __NT__
+#if defined(__NT__) || defined(__MINGW32__)
     if(*(pd+1) ==  ':' && isalpha(*pd))
     {
         strcpy(dev, "\\\\.\\a:");

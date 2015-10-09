@@ -113,7 +113,7 @@ void CloseQLDevice (HANDLE);
 time_t GetTimeZone (void);
 void ZeroSomeSectors(HANDLE fd, short);
 
-#if defined (__linux__) || defined (VMS)
+#if defined (__linux__) || defined (VMS) || defined(__MINGW32__)
 int getch(void);
 # ifndef O_BINARY
 # define O_BINARY 0
