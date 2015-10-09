@@ -10,10 +10,13 @@ Install on your PATH
 	Win95   : msdos/qltools
 
 
-28/10/98 v2.11. Resolve time_t differences on DOS/NT platforms
-17/10/99 v2.12  Kill some horrid, fatal memory problems and leaks
---/10/99 v2.13	Internal, not released
-06/11/99 v2.14  Support for wxqt2
+28/10/1998 v2.11. Resolve time_t differences on DOS/NT platforms
+17/10/1999 v2.12  Kill some horrid, fatal memory problems and leaks
+--/10/1999 v2.13	Internal, not released
+06/11/1999 v2.14  Support for wxqt2
+09/10/2015 v2.15  Updated to remove c99 warnings about unused variables, ignored
+                  return values from read() and write() and wrong printf specifiers
+                  for uint32_t variables. Changes marked ND09102015. 
 
 (c) Jonathan Hudson 1998-99
 jrhudson@bigfoot.com

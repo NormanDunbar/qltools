@@ -6,7 +6,8 @@ HXCFELIBS=$(HXCFEBASE)/libhxcfe/trunk/build/
 HDR = ../
 
 OBJS = qltools.o hxcfe.o
-CFLAGS = -O3 -I$(HDR) -I$(HXCFEINCLUDES) -Wall -s
+# Added -fno-strict-aliasing to avoid type punning warnings. ND09102015.
+CFLAGS = -O3 -I$(HDR) -I$(HXCFEINCLUDES) -Wall -s -fno-strict-aliasing
 TARGET = qltools-hxcfe$(EXE_EXT)
 
 $(TARGET) : $(OBJS)

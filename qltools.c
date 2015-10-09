@@ -75,6 +75,7 @@ static char rcsid[] = "$Id: qltools.c,v 2.11 1996/07/14 11:57:07 jrh Exp jrh $";
 #include <sys/stat.h>
 #include <errno.h>
 #include <time.h>
+#include <inttypes.h> // ND09102015
 #include "qltools.h"
 
 /* -------------------------- globals ----------------------------------- */
@@ -229,6 +230,7 @@ void cat_file (long fnum, QLDIR * entry)
     long flen;
     int i, ii, s, start, end;
     long qldata = 0;
+    ssize_t ignore __attribute__((unused)); // ND09102015
 
 #ifdef DOS_LIKE
     setmode (fileno (stdout), O_BINARY);
@@ -236,7 +238,7 @@ void cat_file (long fnum, QLDIR * entry)
 
     if(entry->d_type == 255)
     {             
-	write(1, QLDIRSTRING, 16);
+	ignore = write(1, QLDIRSTRING, 16); // ND09102015
     }
     else
     {
@@ -308,7 +310,7 @@ void cat_file (long fnum, QLDIR * entry)
 		    long dlen;
 		} xtcc =  {{"XTcc"}, 0};
 		xtcc.dlen = qldata;
-		write(1, &xtcc, 8);
+		err = write(1, &xtcc, 8);
 	    }
 	}
     }
@@ -547,7 +549,7 @@ void print_info (void)
     printf ("allocation block : %i\n", allocblock);
     printf ("sector offset/cyl: %i\n", goffset);
     printf ("random           : %04x\n", swapword (b0->q5a_rand));
-    printf ("Updates          : %ld\n", swaplong (b0->q5a_mupd));
+    printf ("Updates          : %" PRIu32 "\n", swaplong (b0->q5a_mupd)); // ND09102015
     printf ("free sectors     : %i\n", swapword (b0->q5a_free));
     printf ("good sectors     : %i\n", swapword (b0->q5a_good));
     printf ("total sectors    : %i\n", swapword (b0->q5a_totl));
@@ -688,7 +690,7 @@ int print_entry (QLDIR * entry, int fnum, void *flag)
 	}
 	if (entry->d_type == 1 && entry->d_datalen)
 	{
-	    printf (" (%ld)", swaplong (entry->d_datalen));
+	    printf ("%" PRId32, swaplong (entry->d_datalen)); // ND09102015
 	}
 	putc ('\n', stdout);
     }
@@ -755,6 +757,7 @@ void dump_cluster (int num, short flag)
 {
     int i, sect;
     unsigned char buf[512];
+    ssize_t ignore __attribute__((unused)); // ND09102015
 
     for (i = 0; i < allocblock; i++)
     {
@@ -790,7 +793,7 @@ void dump_cluster (int num, short flag)
 	}
 	else
 	{
-	    write (1, buf, 512);
+	    ignore = write (1, buf, 512); //ND09102015
 	}
     }
 }
@@ -1266,6 +1269,7 @@ void writefile (char *fn, short dflag)
     time_t t;
     struct stat s;
     short blksiz = GSSIZE * allocblock;
+    ssize_t ignore __attribute__((unused)); //ND09102015
     
     qlnam = MakeQLName (fn, &nlen);
 
@@ -1280,7 +1284,7 @@ void writefile (char *fn, short dflag)
 
 		if((fd = open(fn, O_RDONLY|O_BINARY)) > -1)
 		{
-		    read(fd, tbuf, 16);
+		    ignore = read(fd, tbuf, 16); // ND09102015
 		    if(memcmp(tbuf, QLDIRSTRING,16) == 0)
 		    {
 			dflag = 255;
@@ -1358,7 +1362,7 @@ void writefile (char *fn, short dflag)
 	{
 	    long stuff[2];
 	    lseek (fl, -8, SEEK_END);
-	    read (fl, stuff, 8);
+	    ignore = read (fl, stuff, 8); // ND09102015
 	    if (*stuff == *(long *) "XTcc")
 	    {
 		qdsize = *(stuff + 1);
@@ -1709,7 +1713,10 @@ void free_cluster (long i)
     }
     else
     {
-	fprintf (stderr, "freeing cluster 0 ???!!!\n");
+	// The use of '??!' below caused this error:
+	// warning: trigraph ??! ignored, use -trigraphs to enable [-Wtrigraphs]
+	// Added a space. ND09102015.
+	fprintf (stderr, "freeing cluster 0 ??? !!!\n");
 	exit (EBADF);
     }
 }
@@ -2020,7 +2027,7 @@ int main (int ac, char **av)
 	CloseQLDevice (fd);
     }
     return (0);
-/* This is to prpvent compiler warning !! */
+/* This is to prevent compiler warning !! */
 /* NOTREACHED */
     (void)rcsid;
 }
