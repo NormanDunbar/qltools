@@ -122,14 +122,14 @@ void *xmalloc (long alot)
 
     if (p == NULL)
     {
-	perror ("! :");
-	exit (ENOMEM);
+        perror ("! :");
+        exit (ENOMEM);
     }
     else
     {
         memset(p, 0, alot);
     }
-    
+
     return p;
 }
 
@@ -144,7 +144,7 @@ uint16_t swapword (uint16_t val)
 uint32_t swaplong (uint32_t val)
 {
     return (uint32_t) (((uint32_t) swapword (val & 0xFFFF) << 16) |
-		    (uint32_t) swapword (val >> 16));
+                       (uint32_t) swapword (val >> 16));
 }
 
 static int maxdir (void)
@@ -186,10 +186,10 @@ void set_fat_cl (uint16_t cluster, uint16_t clnum)
 uint16_t FileXDir(uint16_t fnum)
 {
     uint16_t fno = 0;
-    if(fnum)
-    {
-	fno = swapword(fnum) - 1;
+    if(fnum) {
+        fno = swapword(fnum) - 1;
     }
+
     return fno;
 }
 
@@ -199,11 +199,10 @@ QLDIR *GetEntry (int fn)
 
     if (fn & 0x800)
     {
-	entry = NULL;
-    }
-    else
+        entry = NULL;
+    } else
     {
-	entry = pdir + fn;
+        entry = pdir + fn;
     }
     return entry;
 }
@@ -215,12 +214,12 @@ short FindCluster (uint16_t fnum, uint16_t blkno)
 
     for (i = 0; i < gclusters; i++)
     {
-	file = fat_file (i);
-	blk = fat_cl (i);
-	if (file == fnum && blk == blkno)
-	{
-	    break;
-	}
+        file = fat_file (i);
+        blk = fat_cl (i);
+        if (file == fnum && blk == blkno)
+        {
+            break;
+        }
     }
     return (i == gclusters) ? -1 : i;
 }
@@ -237,82 +236,82 @@ void cat_file (long fnum, QLDIR * entry)
 #endif
 
     if(entry->d_type == 255)
-    {             
-	ignore = write(1, QLDIRSTRING, 16);
+    {
+        ignore = write(1, QLDIRSTRING, 16);
     }
     else
     {
-	flen = swaplong (entry->d_length);	/* with the header */
-	if (entry->d_type == 1)
-	{
-	    qldata = entry->d_datalen;
-	}
+        flen = swaplong (entry->d_length);	/* with the header */
+        if (entry->d_type == 1)
+        {
+            qldata = entry->d_datalen;
+        }
 
-	if (flen + swapword (entry->d_szname) == 0)
-	{
-	    fputs ("warning: file appears to be deleted\n", stderr);
-	}
-	else
-	{
-	    char *buffer = xmalloc (512 * allocblock);
-	    long lblk = flen / (GSSIZE * allocblock);
-	    long xblk = 0,xbyt = 0;
-	    short needx = 1;
-	    
-	    if(qldata)
-	    {
-		xblk = (flen - 8) / (GSSIZE * allocblock);
-		xbyt = (flen - 8) % (GSSIZE * allocblock);
-	    }
+        if (flen + swapword (entry->d_szname) == 0)
+        {
+            fputs ("warning: file appears to be deleted\n", stderr);
+        }
+        else
+        {
+            char *buffer = xmalloc (512 * allocblock);
+            long lblk = flen / (GSSIZE * allocblock);
+            long xblk = 0,xbyt = 0;
+            short needx = 1;
 
-	    for (s = 0; s <= lblk; s++)
-	    {
-		if ((i = FindCluster (fnum, s)) != -1)
-		{
-		    read_cluster (buffer, i);
-		    if (s == 0)
-			start = 64;
-		    else
-			start = 0;
-		    end = GSSIZE * allocblock;
-		    if (s == lblk)
-			end = flen % (GSSIZE * allocblock);
-		    err = write (1, buffer + start, end - start);
-		    if (err < 0)
-			perror ("output file: write(): ");
-		    if(qldata && s == xblk)
-		    {
-			needx = memcmp(buffer+start+xbyt, "XTcc", 4);
-		    }
-		}
-		else
-		{
-		    fprintf (stderr, "** Cluster #%d of %.*s not found **\n", 
-			     s, entry->d_szname, entry->d_name);
-		    err = lseek (1, GSSIZE * allocblock, SEEK_CUR);
-		    /* leave hole */
-		    if (err < 0)	/* non seekable */
-			for (ii = 0; ii < allocblock * GSSIZE; ii++)
-			    fputc ('#', stdout);
-		}
-	    }
-	    free (buffer);
+            if(qldata)
+            {
+                xblk = (flen - 8) / (GSSIZE * allocblock);
+                xbyt = (flen - 8) % (GSSIZE * allocblock);
+            }
 
-	    if (qldata && needx)
-	    {
-		static struct 
-		{
-		    union 
-		    {
-			char xtcc[4];
-			long x;
-		    } x;
-		    long dlen;
-		} xtcc =  {{"XTcc"}, 0};
-		xtcc.dlen = qldata;
-		err = write(1, &xtcc, 8);
-	    }
-	}
+            for (s = 0; s <= lblk; s++)
+            {
+                if ((i = FindCluster (fnum, s)) != -1)
+                {
+                    read_cluster (buffer, i);
+                    if (s == 0)
+                        start = 64;
+                    else
+                        start = 0;
+                    end = GSSIZE * allocblock;
+                    if (s == lblk)
+                        end = flen % (GSSIZE * allocblock);
+                    err = write (1, buffer + start, end - start);
+                    if (err < 0)
+                        perror ("output file: write(): ");
+                    if(qldata && s == xblk)
+                    {
+                        needx = memcmp(buffer+start+xbyt, "XTcc", 4);
+                    }
+                }
+                else
+                {
+                    fprintf (stderr, "** Cluster #%d of %.*s not found **\n",
+                             s, entry->d_szname, entry->d_name);
+                    err = lseek (1, GSSIZE * allocblock, SEEK_CUR);
+                    /* leave hole */
+                    if (err < 0)	/* non seekable */
+                        for (ii = 0; ii < allocblock * GSSIZE; ii++)
+                            fputc ('#', stdout);
+                }
+            }
+            free (buffer);
+
+            if (qldata && needx)
+            {
+                static struct
+                {
+                    union
+                    {
+                        char xtcc[4];
+                        long x;
+                    } x;
+                    long dlen;
+                } xtcc =  {{"XTcc"}, 0};
+                xtcc.dlen = qldata;
+                err = write(1, &xtcc, 8);
+            }
+        }
     }
 }
 
@@ -328,57 +327,57 @@ void UpdateSubEntry (QLDIR * entry, SDL * sdl, short *off)
 
     if (off)
     {
-	s = (*off) / (GSSIZE * allocblock);
-	j = (*off) % (GSSIZE * allocblock);
-	if ((i = FindCluster (fnum, s)) != -1)
-	{
-	    if (flen != 128 && j != 64)
-	    {
-		read_cluster (buffer, i);
-	    }
-	    memcpy ((buffer + j), entry, 64);
-	    write_cluster (buffer, i);
-	}
+        s = (*off) / (GSSIZE * allocblock);
+        j = (*off) % (GSSIZE * allocblock);
+        if ((i = FindCluster (fnum, s)) != -1)
+        {
+            if (flen != 128 && j != 64)
+            {
+                read_cluster (buffer, i);
+            }
+            memcpy ((buffer + j), entry, 64);
+            write_cluster (buffer, i);
+        }
     }
     else
     {
-	for (s = 0; !rval && s <= flen / (GSSIZE * allocblock); s++)
-	{
-	    i = FindCluster (fnum, s);
-	    if (i != -1)
-	    {
-		read_cluster (buffer, i);
-		if (s == 0)
-		    start = 64;
-		else
-		    start = 0;
-		end = GSSIZE * allocblock;
+        for (s = 0; !rval && s <= flen / (GSSIZE * allocblock); s++)
+        {
+            i = FindCluster (fnum, s);
+            if (i != -1)
+            {
+                read_cluster (buffer, i);
+                if (s == 0)
+                    start = 64;
+                else
+                    start = 0;
+                end = GSSIZE * allocblock;
 
-		if (s == (flen / (GSSIZE * allocblock)))
-		    end = (flen % (GSSIZE * allocblock));
-		else
-		    end = GSSIZE * allocblock;
-		for (j = start; j <= end; j += 64)
-		{
-		    QLDIR *ent = (QLDIR *) (buffer + j);
+                if (s == (flen / (GSSIZE * allocblock)))
+                    end = (flen % (GSSIZE * allocblock));
+                else
+                    end = GSSIZE * allocblock;
+                for (j = start; j <= end; j += 64)
+                {
+                    QLDIR *ent = (QLDIR *) (buffer + j);
 
-		    if (ent->d_fileno == entry->d_fileno)
-		    {
-			if (entry->d_szname == 0 && entry->d_length == 0)
-			{
-			    memset (ent, '\0', 64);
-			}
-			else
-			{
-			    memcpy (ent, entry, 64);
-			}
-			write_cluster (buffer, i);
-			rval = 1;
-			break;
-		    }
-		}
-	    }
-	}
+                    if (ent->d_fileno == entry->d_fileno)
+                    {
+                        if (entry->d_szname == 0 && entry->d_length == 0)
+                        {
+                            memset (ent, '\0', 64);
+                        }
+                        else
+                        {
+                            memcpy (ent, entry, 64);
+                        }
+                        write_cluster (buffer, i);
+                        rval = 1;
+                        break;
+                    }
+                }
+            }
+        }
     }
     free (buffer);
 }
@@ -389,20 +388,20 @@ void RemoveList (SDL * sdl)
 
     for (sl = SList; sl; prev = sl, sl = sl->next)
     {
-	if (sdl == sl)
-	{
-	    if (prev == NULL)
-	    {
-		SList = sl->next;
-	    }
-	    else
-	    {
-		prev->next = sl->next;
-	    }
-	    free (sl);
-	    sl = NULL;
-	    break;
-	}
+        if (sdl == sl)
+        {
+            if (prev == NULL)
+            {
+                SList = sl->next;
+            }
+            else
+            {
+                prev->next = sl->next;
+            }
+            free (sl);
+            sl = NULL;
+            break;
+        }
     }
 }
 
@@ -413,21 +412,21 @@ int CountDir (QLDIR * e, int fnum, COUNT_S *s)
 
     if (((len = e->d_length) != 0) &&  (e->d_szname != 0))
     {
-	s->nfiles++;
+        s->nfiles++;
     }
 
     if (s->rflag == 0)
     {
-	s->indir++;
-	if (len == 0 && s->freed == 0)
-	{
-	    s->freed = s->indir;
-	}
+        s->indir++;
+        if (len == 0 && s->freed == 0)
+        {
+            s->freed = s->indir;
+        }
     }
     else if (e->d_type == 255)
     {
-	RecurseDir (fnum, swaplong (e->d_length), s, 
-		    (int (*) (QLDIR *, int, void *)) CountDir);
+        RecurseDir (fnum, swaplong (e->d_length), s,
+                    (int (*) (QLDIR *, int, void *)) CountDir);
     }
     return 0;
 }
@@ -444,18 +443,18 @@ void del_file (long fnum, QLDIR * entry, SDL * sdl)
 
     if (entry->d_type == 255)
     {
-	RecurseDir (fnum, swaplong (entry->d_length), &nf, 
-		    (int (*) (QLDIR *, int, void *)) CountDir);
-	if (nf.nfiles)
-	{
-	    fprintf (stderr, "Directory must be empty to delete (%d)\n",
-		     nf.nfiles);
-	    exit (ENOTEMPTY);
-	}
-	else
-	{
-	    rdir = 1;
-	}
+        RecurseDir (fnum, swaplong (entry->d_length), &nf,
+                    (int (*) (QLDIR *, int, void *)) CountDir);
+        if (nf.nfiles)
+        {
+            fprintf (stderr, "Directory must be empty to delete (%d)\n",
+                     nf.nfiles);
+            exit (ENOTEMPTY);
+        }
+        else
+        {
+            rdir = 1;
+        }
     }
 
     freed = 0;
@@ -464,20 +463,20 @@ void del_file (long fnum, QLDIR * entry, SDL * sdl)
     flen = swaplong (entry->d_length);
     if (flen == 0)
     {
-	fprintf (stderr, "file already deleted?\n");
-	exit (EBADF);
+        fprintf (stderr, "file already deleted?\n");
+        exit (EBADF);
     }
 
     for (i = 1; i < gclusters; i++)
     {
-	file = fat_file (i);
-	if (file == fnum)
-	{
-	    if (fat_cl (i) == 0)
-		blk0 = i;
-	    free_cluster (i);
-	    freed++;
-	}
+        file = fat_file (i);
+        if (file == fnum)
+        {
+            if (fat_cl (i) == 0)
+                blk0 = i;
+            free_cluster (i);
+            freed++;
+        }
     }
 
     b0->q5a_free = swapword (freed * allocblock + swapword (b0->q5a_free));
@@ -488,51 +487,52 @@ void del_file (long fnum, QLDIR * entry, SDL * sdl)
 
     if (blk0 > 0)
     {
-	uint8_t *b = xmalloc (512 * allocblock);
+        uint8_t *b = xmalloc (512 * allocblock);
 
-	read_cluster (b, blk0);
-	memcpy (b, entry, 64);
-	write_cluster (b, blk0);
-	free (b);
+        read_cluster (b, blk0);
+        memcpy (b, entry, 64);
+        write_cluster (b, blk0);
+        free (b);
     }
     else
-	fprintf (stderr, "block 0 of file missing??\n");
+        fprintf (stderr, "block 0 of file missing??\n");
 
     write_b0fat ();		/* write_cluster(b0,0); */
     dir_write_back (entry, sdl, NULL);
     if (rdir)
     {
-	RemoveList (sdl);
+        RemoveList (sdl);
     }
 }
 
 void usage (char *error)
 {
-    static char *options[] = 
+    static char *options[] =
     {
-    "Usage: qltools dev -[options] [filename]\n",
-    "options:\n",
-    "    -d         list directory          -s         list short directory",
-    "    -i         list info               -m         list disk map",
-    "    -c         list conversion table   -l         list files on write",
-    "    -w <files> write files (query)     -W <files> (over)write files",
-    "    -r <name>  remove file <name>      -n <flle>  copy <file> to stdout",
-    "    -uN        ASCII dump cluster N    -UN        binary dump",
-    "    -M <name>  Make level 2 directory <name>\n",
-    "    -x <name> <size> make <name> executable with dataspace <size>",
-    "    -fxx <name> format as xx=hd|dd disk with label <name>\n", 
-    "  QLTOOLS for " OSNAME " (version " VERSION ")\n",
-    "  dev is either a file with the image of a QL format disk",
-    "  or a floppy drive with a SMS/QDOS disk inserted in it (e.g. " FDNAME ")\n",
-    "  by Giuseppe Zanetti,Valenti Omar,Richard Zidlicky & Jonathan Hudson",
-    NULL};
+        "Usage: qltools dev -[options] [filename]\n",
+        "options:\n",
+        "    -d         list directory          -s         list short directory",
+        "    -i         list info               -m         list disk map",
+        "    -c         list conversion table   -l         list files on write",
+        "    -w <files> write files (query)     -W <files> (over)write files",
+        "    -r <name>  remove file <name>      -n <flle>  copy <file> to stdout",
+        "    -uN        ASCII dump cluster N    -UN        binary dump",
+        "    -M <name>  Make level 2 directory <name>\n",
+        "    -x <name> <size> make <name> executable with dataspace <size>",
+        "    -fxx <name> format as xx=hd|dd disk with label <name>\n",
+        "  QLTOOLS for " OSNAME " (version " VERSION ")\n",
+        "  dev is either a file with the image of a QL format disk",
+        "  or a floppy drive with a SMS/QDOS disk inserted in it (e.g. " FDNAME ")\n",
+        "  by Giuseppe Zanetti,Valenti Omar,Richard Zidlicky & Jonathan Hudson",
+        NULL
+    };
     char **h;
-    
+
     fprintf (stderr, "error : %s\n", error);
     for( h = options; *h; h++)
     {
-	fputs(*h, stderr);
-	fputc('\n', stderr);
+        fputs(*h, stderr);
+        fputc('\n', stderr);
     }
     exit (EINVAL);
 }
@@ -558,14 +558,14 @@ void print_info (void)
 
     printf ("\nlogical-to-physical sector mapping table:\n\n");
     for (i = 0; i < gspcyl; i++)
-	printf ("%x ", b0->q5a_lgph[i]);
+        printf ("%x ", b0->q5a_lgph[i]);
     putc ('\n', stdout);
 
     if (ql5a)
     {
-	printf ("\nphysical-to-logical sector mapping table:\n\n");
-	for (i = 0; i < gspcyl; i++)
-	    printf ("%x ", b0->q5a_phlg[i]);
+        printf ("\nphysical-to-logical sector mapping table:\n\n");
+        for (i = 0; i < gspcyl; i++)
+            printf ("%x ", b0->q5a_phlg[i]);
     }
     putc ('\n', stdout);
 }
@@ -578,41 +578,41 @@ int RecurseDir (int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void
 
     if (flen > 64)
     {
-	uint8_t *buffer = xmalloc (GSSIZE * allocblock);
+        uint8_t *buffer = xmalloc (GSSIZE * allocblock);
 
-	for (s = 0; s <= flen / (GSSIZE * allocblock); s++)
-	{
+        for (s = 0; s <= flen / (GSSIZE * allocblock); s++)
+        {
 
-	    i = FindCluster (fnum, s);
-	    if (i != -1)
-	    {
-		read_cluster (buffer, i);
-		if (s == 0)
-		    start = 64;
-		else
-		    start = 0;
-		end = GSSIZE * allocblock;
+            i = FindCluster (fnum, s);
+            if (i != -1)
+            {
+                read_cluster (buffer, i);
+                if (s == 0)
+                    start = 64;
+                else
+                    start = 0;
+                end = GSSIZE * allocblock;
 
-		if (s == (flen / (GSSIZE * allocblock)))
-		    end = (flen % (GSSIZE * allocblock));
-		else
-		    end = GSSIZE * allocblock;
-		for (j = start; j <= end; j += 64)
-		{
-		    QLDIR *ent = (QLDIR *) (buffer + j);
-		    int fno = FileXDir(ent->d_fileno);
-		    if ((rval = (func) (ent, fno, parm)) != 0)
-		    {
-			break;
-		    }
-		}
-	    }
-	}
-	free (buffer);
+                if (s == (flen / (GSSIZE * allocblock)))
+                    end = (flen % (GSSIZE * allocblock));
+                else
+                    end = GSSIZE * allocblock;
+                for (j = start; j <= end; j += 64)
+                {
+                    QLDIR *ent = (QLDIR *) (buffer + j);
+                    int fno = FileXDir(ent->d_fileno);
+                    if ((rval = (func) (ent, fno, parm)) != 0)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        free (buffer);
     }
     else
     {
-	rval = 1;
+        rval = 1;
     }
     return rval;
 }
@@ -623,80 +623,80 @@ int print_entry (QLDIR * entry, int fnum, void *flag)
     long flen;
 
     if (entry == NULL)
-	return 0;
+        return 0;
 
     flen = swaplong (entry->d_length);
 
     if (flen + swapword (entry->d_szname) == 0)
-	return 0;
+        return 0;
 
     j = k = swapword (entry->d_szname);
     if (*((short *) flag) == 0)
     {
-	k = 36;
+        k = 36;
     }
     printf ("%-*.*s", k, j, entry->d_name);
 
     if (entry->d_type == 255)
     {
-	if (*((short *) flag))
-	{
-	    putc ('\n', stdout);
-	}
-	else
-	{
-	    if (*((short *) flag) == 0)
-	    {
-		printf ("(dir) %ld\n", flen - 64l);
-	    }
-	}
-	if(*((short *)flag) != 2)
-	{
-	    RecurseDir (fnum, flen, flag, print_entry);
-	}
-	
+        if (*((short *) flag))
+        {
+            putc ('\n', stdout);
+        }
+        else
+        {
+            if (*((short *) flag) == 0)
+            {
+                printf ("(dir) %ld\n", flen - 64l);
+            }
+        }
+        if(*((short *)flag) != 2)
+        {
+            RecurseDir (fnum, flen, flag, print_entry);
+        }
+
     }
     else if (*((short *) flag) == 0)
     {
-	switch (entry->d_type)
-	{
-	    case 0:
-		fputs (" ", stdout);
-		break;
-	    case 1:
-		fputs ("E", stdout);
-		break;
-	    case 2:
-		fputs ("r", stdout);
-		break;
-	    default:
-		printf ("%3d", entry->d_type);
-		break;
-	}
-	printf (" %7ld", (long) (flen - 64L));
-	{
-	    struct tm *tm;
-	    time_t t = swaplong (entry->d_update) - TIME_DIFF - timeadjust;
+        switch (entry->d_type)
+        {
+        case 0:
+            fputs (" ", stdout);
+            break;
+        case 1:
+            fputs ("E", stdout);
+            break;
+        case 2:
+            fputs ("r", stdout);
+            break;
+        default:
+            printf ("%3d", entry->d_type);
+            break;
+        }
+        printf (" %7ld", (long) (flen - 64L));
+        {
+            struct tm *tm;
+            time_t t = swaplong (entry->d_update) - TIME_DIFF - timeadjust;
 #ifdef __WIN32__
             if(t < 0) t = 0;
 #elif defined (__GO32__)
             if(t & (1 << 31)) t = 0;
 #endif
-	    tm = localtime (&t);
-	    printf (" %02d/%02d/%02d %02d:%02d:%02d v%-5u",
-		    tm->tm_mday, tm->tm_mon + 1, tm->tm_year,
-		    tm->tm_hour, tm->tm_min, tm->tm_sec,
-		    swapword (entry->d_version));
-	}
-	if (entry->d_type == 1 && entry->d_datalen)
-	{
-	    printf ("%" PRId32, swaplong (entry->d_datalen));
-	}
-	putc ('\n', stdout);
+            tm = localtime (&t);
+            printf (" %02d/%02d/%02d %02d:%02d:%02d v%-5u",
+                    tm->tm_mday, tm->tm_mon + 1, tm->tm_year,
+                    tm->tm_hour, tm->tm_min, tm->tm_sec,
+                    swapword (entry->d_version));
+        }
+        if (entry->d_type == 1 && entry->d_datalen)
+        {
+            printf ("%" PRId32, swaplong (entry->d_datalen));
+        }
+        putc ('\n', stdout);
     }
     else
     {
-	putc ('\n', stdout);
+        putc ('\n', stdout);
     }
     return 0;
 }
@@ -708,18 +708,18 @@ void print_dir (short flag)
 
     if (flag == 0)
     {
-	printf ("%.10s\n", b0->q5a_mnam);
-	printf ("%i/%i sectors.\n\n",
-		swapword (b0->q5a_free), swapword (b0->q5a_good));
+        printf ("%.10s\n", b0->q5a_mnam);
+        printf ("%i/%i sectors.\n\n",
+                swapword (b0->q5a_free), swapword (b0->q5a_good));
     }
 
     for (d = 1; d < maxdir (); d++)
     {
-	entry = pdir + d;
-	if (swaplong (entry->d_length) + swapword (entry->d_szname) != 0)
-	{
-	    print_entry (entry, d, &flag);
-	}
+        entry = pdir + d;
+        if (swaplong (entry->d_length) + swapword (entry->d_szname) != 0)
+        {
+            print_entry (entry, d, &flag);
+        }
     }
 }
 
@@ -729,27 +729,27 @@ void make_convtable (int verbose)
 
     if (verbose)
     {
-	printf ("\nCONVERSION TABLE\n\n");
-	printf ("logic\ttrack\tside\tsector\tunix_dev\n\n");
+        printf ("\nCONVERSION TABLE\n\n");
+        printf ("logic\ttrack\tside\tsector\tunix_dev\n\n");
     }
 
     sectors = gclusters * allocblock;
 
     if (verbose)
     {
-	for (i = 0; i < sectors; i++)
-	{
-	    tr = LTP_TRACK (i);
-	    si = LTP_SIDE (i);
-	    se = LTP_SCT (i);
-	    uxs = tr * gspcyl + gsectors * si + se;
+        for (i = 0; i < sectors; i++)
+        {
+            tr = LTP_TRACK (i);
+            si = LTP_SIDE (i);
+            se = LTP_SCT (i);
+            uxs = tr * gspcyl + gsectors * si + se;
             xx = LTP(i);
-            
-	    if (verbose)
-	    {
-		printf ("%i\t%i\t%i\t%i\t%i %d\n", i, tr, si, se, uxs, xx);
-	    }
-	}
+
+            if (verbose)
+            {
+                printf ("%i\t%i\t%i\t%i\t%i %d\n", i, tr, si, se, uxs, xx);
+            }
+        }
     }
 }
 
@@ -761,40 +761,40 @@ void dump_cluster (int num, short flag)
 
     for (i = 0; i < allocblock; i++)
     {
-	short j, k;
-	unsigned char *p;
-	long fpos=0;
+        short j, k;
+        unsigned char *p;
+        long fpos=0;
 
-	sect = num * allocblock + i;
-	err = ReadQLSector (fd, buf, sect);
+        sect = num * allocblock + i;
+        err = ReadQLSector (fd, buf, sect);
 
-	if (err < 0)
-	    perror ("dump block: read(): ");
-	if (flag == 0)
-	{
-	    p = buf;
-	    for (k = 0; k < 32; k++)
-	    {
-		printf ("%03lx : ", k * 16 + fpos);
+        if (err < 0)
+            perror ("dump block: read(): ");
+        if (flag == 0)
+        {
+            p = buf;
+            for (k = 0; k < 32; k++)
+            {
+                printf ("%03lx : ", k * 16 + fpos);
 
-		for (j = 0; j < 16; j++)
-		{
-		    printf (" %02x", *p++);
-		}
-		fputc ('\t', stdout);
-		p -= 16;
+                for (j = 0; j < 16; j++)
+                {
+                    printf (" %02x", *p++);
+                }
+                fputc ('\t', stdout);
+                p -= 16;
 
-		for (j = 0; j < 16; j++, p++)
-		{
-		    printf ("%c", isprint (*p) ? *p : '.');
-		}
-		fputc ('\n', stdout);
-	    }
-	}
-	else
-	{
-	    ignore = write (1, buf, 512);
-	}
+                for (j = 0; j < 16; j++, p++)
+                {
+                    printf ("%c", isprint (*p) ? *p : '.');
+                }
+                fputc ('\n', stdout);
+            }
+        }
+        else
+        {
+            ignore = write (1, buf, 512);
+        }
     }
 }
 
@@ -805,8 +805,8 @@ int read_cluster (void *p, int num)
 
     for (i = 0; i < allocblock; i++)
     {
-	sect = num * allocblock + i;
-	r = ReadQLSector (fd, (char *) p + i * GSSIZE, sect);
+        sect = num * allocblock + i;
+        r = ReadQLSector (fd, (char *) p + i * GSSIZE, sect);
     }
     return r;
 }
@@ -817,8 +817,8 @@ void write_cluster (void *p, int num)
 
     for (i = 0; i < allocblock; i++)
     {
-	sect = num * allocblock + i;
-	WriteQLSector (fd, (char *) p + i * GSSIZE, sect);
+        sect = num * allocblock + i;
+        WriteQLSector (fd, (char *) p + i * GSSIZE, sect);
     }
 }
 
@@ -828,10 +828,10 @@ void read_b0fat (int argconv)
 
     if (strncmp((char *)b0->q5a_id, "QL5", 3))
     {
-	fprintf (stderr, "\nNot an SMS disk %.4s %2.2x:%2.2x:%2.2x:%2.2x !!!\n",
-		 b0->q5a_id, b0->q5a_id[0], b0->q5a_id[1], b0->q5a_id[2],
-		 b0->q5a_id[3]);
-	exit (ENODEV);
+        fprintf (stderr, "\nNot an SMS disk %.4s %2.2x:%2.2x:%2.2x:%2.2x !!!\n",
+                 b0->q5a_id, b0->q5a_id[0], b0->q5a_id[1], b0->q5a_id[2],
+                 b0->q5a_id[3]);
+        exit (ENODEV);
     }
 
     ql5a = b0->q5a_id[3] == 'A';
@@ -859,7 +859,7 @@ void write_b0fat (void)
 
     for (i = 0; fat_file (i) == 0xf80; i++)
     {
-	write_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
+        write_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
     }
 }
 
@@ -869,7 +869,7 @@ void read_fat (void)
     int i;
 
     for (i = 0; fat_file (i) == 0xf80; i++)
-	read_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
+        read_cluster ((uint8_t *) b0 + i * allocblock * GSSIZE, i);
 }
 
 short CheckFileName (QLDIR * ent, char *fname)
@@ -881,22 +881,22 @@ short CheckFileName (QLDIR * ent, char *fname)
     len = strlen (fname);
     if (swapword (ent->d_szname) == len)
     {
-	match = 1;
-	for (i = 0; i < len; i++)
-	{
-	    c0 = *(ent->d_name + i);
-	    c0 = tolower (c0);
-	    c1 = tolower (fname[i]);
+        match = 1;
+        for (i = 0; i < len; i++)
+        {
+            c0 = *(ent->d_name + i);
+            c0 = tolower (c0);
+            c1 = tolower (fname[i]);
 
-	    if (c0 != c1)
-	    {
-		if (!tranql || !(c1 == '.' && c0 == '_'))
-		{
-		    match = 0;
-		    break;
-		}
-	    }
-	}
+            if (c0 != c1)
+            {
+                if (!tranql || !(c1 == '.' && c0 == '_'))
+                {
+                    match = 0;
+                    break;
+                }
+            }
+        }
     }
     return match;
 }
@@ -909,7 +909,7 @@ int FindName (QLDIR * e, int fileno, void *llist)
 
     if ((res = CheckFileName (e, mlist[0])) != 0)
     {
-	memcpy ((QLDIR *) mlist[1], e, sizeof (QLDIR));
+        memcpy ((QLDIR *) mlist[1], e, sizeof (QLDIR));
     }
     return res;
 }
@@ -922,53 +922,53 @@ long int match_file (char *fname, QLDIR ** ent, SDL ** sdl)
 
     if (sdl)
     {
-	*sdl = NULL;
+        *sdl = NULL;
     }
     for (d = 1; d < maxdir (); d++)
     {
-	if ((match = CheckFileName (pdir + d, fname)) != 0)
-	{
-	    if (ent)
-	    {
-		*ent = pdir + d;
-	    }
-	    r = d;
-	    break;
-	}
+        if ((match = CheckFileName (pdir + d, fname)) != 0)
+        {
+            if (ent)
+            {
+                *ent = pdir + d;
+            }
+            r = d;
+            break;
+        }
     }
 
     if (match == 0)
     {
-	SDL *sl;
+        SDL *sl;
 
-	memset (&sd, 0, 64);
-	for (sl = SList; sl; sl = sl->next)
-	{
-	    if (sl->flen > 64 && strncasecmp (fname, sl->name, sl->szname) == 0
-		&& strlen(fname) != sl->szname)
-	    {
-		void *llist[3];
-		
-		llist[0] = fname;
-		llist[1] = &sd;
-		llist[2] = NULL;
+        memset (&sd, 0, 64);
+        for (sl = SList; sl; sl = sl->next)
+        {
+            if (sl->flen > 64 && strncasecmp (fname, sl->name, sl->szname) == 0
+                    && strlen(fname) != sl->szname)
+            {
+                void *llist[3];
 
-		if ((match = RecurseDir (sl->fileno, sl->flen, llist, 
-					 FindName)) != 0)
-		{
-		    r = FileXDir (sd.d_fileno);
-		    if (ent)
-		    {
-			*ent = &sd;
-		    }
-		    if (sdl)
-		    {
-			*sdl = sl;
-		    }
-		    break;
-		}
-	    }
-	}
+                llist[0] = fname;
+                llist[1] = &sd;
+                llist[2] = NULL;
+
+                if ((match = RecurseDir (sl->fileno, sl->flen, llist,
+                                         FindName)) != 0)
+                {
+                    r = FileXDir (sd.d_fileno);
+                    if (ent)
+                    {
+                        *ent = &sd;
+                    }
+                    if (sdl)
+                    {
+                        *sdl = sl;
+                    }
+                    break;
+                }
+            }
+        }
     }
     return (r);
 }
@@ -992,9 +992,9 @@ char *MakeQLName (char *fn, short *n)
             p++;
         }
     }
-    
+
     if (p == NULL)
-	p = fn;
+        p = fn;
     q = strdup (p);
 
     *n = min (strlen (q), 36);
@@ -1002,11 +1002,11 @@ char *MakeQLName (char *fn, short *n)
 
     if (tranql)
     {
-	for (p = q; *p; p++)
-	{
-	    if (*p == '.')
-		*p = '_';
-	}
+        for (p = q; *p; p++)
+        {
+            if (*p == '.')
+                *p = '_';
+        }
     }
 
     return q;
@@ -1018,16 +1018,16 @@ SDL *CheckDirLevel (char *qlnam, short n)
 
     for (sl = SList; sl; sl = sl->next)
     {
-	if (n > sl->szname + 1)
-	{
-	    if (strncasecmp (qlnam, sl->name, sl->szname) == 0)
-	    {
-		if (*(qlnam + sl->szname) == '_')
-		{
-		    break;
-		}
-	    }
-	}
+        if (n > sl->szname + 1)
+        {
+            if (strncasecmp (qlnam, sl->name, sl->szname) == 0)
+            {
+                if (*(qlnam + sl->szname) == '_')
+                {
+                    break;
+                }
+            }
+        }
     }
     return sl;
 }
@@ -1042,8 +1042,8 @@ int AllocNewSubDirCluster (long flen, uint16_t fileno)
 
     if ((i = alloc_new_cluster (fileno, seqno, 0)) != -1)
     {
-	p = xmalloc (GSSIZE * allocblock);
-	write_cluster (p, i);
+        p = xmalloc (GSSIZE * allocblock);
+        write_cluster (p, i);
         free(p);
     }
     return i;
@@ -1058,90 +1058,90 @@ QLDIR *GetNewDirEntry (SDL * sdl, int *filenew, int *nblock, short *diroff)
 
     if (sdl == NULL)
     {
-	offset = 1;
-	while ((swaplong ((pdir + offset)->d_length) +
-		swapword ((pdir + offset)->d_szname) > 0)
-	       && (offset < maxdir ()))
-	{
-	    offset++;
-	}
+        offset = 1;
+        while ((swaplong ((pdir + offset)->d_length) +
+                swapword ((pdir + offset)->d_szname) > 0)
+                && (offset < maxdir ()))
+        {
+            offset++;
+        }
 
-	if (offset >= maxdir ())
-	{
-	    hole = 0;
-	    offset = maxdir ();
-	}
-	else
-	{
-	    hole = 1;
-	}
+        if (offset >= maxdir ())
+        {
+            hole = 0;
+            offset = maxdir ();
+        }
+        else
+        {
+            hole = 1;
+        }
 
-	if ((byeod == 0) && ((bleod % allocblock) == 0) && !hole)
-	{
-	    i = alloc_new_cluster (0, block_max, 0);
-	    if (i < 0)
-	    {
-		fprintf (stderr, "write file: no free cluster\n");
-		exit (ENOSPC);
-	    }
-	    *nblock = *nblock + 1;
-	    block_dir[block_max] = i;
-	    block_max++;
-	}
+        if ((byeod == 0) && ((bleod % allocblock) == 0) && !hole)
+        {
+            i = alloc_new_cluster (0, block_max, 0);
+            if (i < 0)
+            {
+                fprintf (stderr, "write file: no free cluster\n");
+                exit (ENOSPC);
+            }
+            *nblock = *nblock + 1;
+            block_dir[block_max] = i;
+            block_max++;
+        }
 
-	if (!hole)
-	    byeod += 64;
+        if (!hole)
+            byeod += 64;
 
-	if (byeod == GSSIZE)
-	{
-	    byeod = 0;
-	    bleod += 1;
-	}
+        if (byeod == GSSIZE)
+        {
+            byeod = 0;
+            bleod += 1;
+        }
 
-	*filenew = offset;
-	ent = pdir + offset;
+        *filenew = offset;
+        ent = pdir + offset;
     }
     else
     {
-	static QLDIR newent;
+        static QLDIR newent;
 
-	if ((sdl->flen % GSSIZE * allocblock) == 0)
-	{
-	    if (AllocNewSubDirCluster (sdl->flen, sdl->fileno))
-	    {
-		*nblock = *nblock + 1;
-		*diroff = sdl->flen;
-		sdl->flen += 64;
-	    }
-	}
-	else
-	{
-	    COUNT_S nf;
+        if ((sdl->flen % GSSIZE * allocblock) == 0)
+        {
+            if (AllocNewSubDirCluster (sdl->flen, sdl->fileno))
+            {
+                *nblock = *nblock + 1;
+                *diroff = sdl->flen;
+                sdl->flen += 64;
+            }
+        }
+        else
+        {
+            COUNT_S nf;
 
-	    nf.nfiles = nf.rflag = nf.freed = nf.indir = 0;
-	    RecurseDir (sdl->fileno, sdl->flen, &nf,
-		    (int (*) (QLDIR *, int, void *))CountDir);
+            nf.nfiles = nf.rflag = nf.freed = nf.indir = 0;
+            RecurseDir (sdl->fileno, sdl->flen, &nf,
+                        (int (*) (QLDIR *, int, void *))CountDir);
 
-	    if ((sdl->flen - 64) == 64 * nf.nfiles)
-	    {
-		*diroff = sdl->flen;
-		sdl->flen += 64;
-	    }
-	    else
-	    {
-		*diroff = 64 * nf.freed;
-	    }
-	}
-	i = find_free_cluster ();
-	ent = &newent;
-	*filenew = (i + 0x800);
+            if ((sdl->flen - 64) == 64 * nf.nfiles)
+            {
+                *diroff = sdl->flen;
+                sdl->flen += 64;
+            }
+            else
+            {
+                *diroff = 64 * nf.freed;
+            }
+        }
+        i = find_free_cluster ();
+        ent = &newent;
+        *filenew = (i + 0x800);
     }
     return ent;
 }
 
 SDL * AddSlist(QLDIR *entry, int fileno)
 {
-    SDL *sdl;	
+    SDL *sdl;
     sdl = xmalloc (sizeof (SDL));
     sdl->flen = swaplong (entry->d_length);
     sdl->fileno = fileno;
@@ -1149,80 +1149,80 @@ SDL * AddSlist(QLDIR *entry, int fileno)
     memcpy (sdl->name, entry->d_name, sdl->szname);
     sdl->next = SList;
     SList = sdl;
-    
+
     return sdl;
-    
+
 }
 
 int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs)
 {
- 
+
     short n = swapword(fs->nde->d_szname);
     short m = swapword(entry->d_szname);
 
-    
-    if((m > n + 1) && 
-                strncasecmp(entry->d_name, fs->nde->d_name, n) == 0 && 
-                *(entry->d_name + n) == '_')
+
+    if((m > n + 1) &&
+            strncasecmp(entry->d_name, fs->nde->d_name, n) == 0 &&
+            *(entry->d_name + n) == '_')
     {
-	    uint16_t dcl, fcl;
-	    QLDIR nent;
-	    SDL *nsdl;
-	    short i;
-	    uint8_t *buf;
-	    long cwdlen;
-            
-	    fcl = FindCluster(fileno, 0);
-	    nent = *entry;
+        uint16_t dcl, fcl;
+        QLDIR nent;
+        SDL *nsdl;
+        short i;
+        uint8_t *buf;
+        long cwdlen;
 
-	    /* If its a root entry, this removes it */
+        fcl = FindCluster(fileno, 0);
+        nent = *entry;
 
-	    entry->d_length = 0;
-	    entry->d_szname = 0;
+        /* If its a root entry, this removes it */
 
-	    if((nsdl = CheckDirLevel(entry->d_name, m)) != NULL)
-	    {
-		/* If a sub-dir, this does */
-		UpdateSubEntry(entry, nsdl, 0);
-	    }
-	    
-	    for (i = 0; i < gclusters; i++)
-	    {
-		if(fat_file (i) == fileno)
-		{
-		    set_fat_file(i, fcl+0x800);
-		}		    
-	    }	    
-	    nent.d_fileno = swapword(fcl+0x801);
-	    /* 
-	     * fs->fnew is the file no (start cluster (+0x800)) 
-	     * of directory
+        entry->d_length = 0;
+        entry->d_szname = 0;
+
+        if((nsdl = CheckDirLevel(entry->d_name, m)) != NULL)
+        {
+            /* If a sub-dir, this does */
+            UpdateSubEntry(entry, nsdl, 0);
+        }
+
+        for (i = 0; i < gclusters; i++)
+        {
+            if(fat_file (i) == fileno)
+            {
+                set_fat_file(i, fcl+0x800);
+            }
+        }
+        nent.d_fileno = swapword(fcl+0x801);
+        /*
+         * fs->fnew is the file no (start cluster (+0x800))
+         * of directory
              */
 
-	    /* Now write nent to new-ish directory */
+        /* Now write nent to new-ish directory */
 
-	    buf = xmalloc(GSSIZE * allocblock);
-	    cwdlen = swaplong(fs->nde->d_length);
-	    dcl = fs->fnew; 
-	    if((cwdlen % GSSIZE * allocblock) == 0)
-	    {
-		dcl = alloc_new_cluster(dcl, 
-					cwdlen / (GSSIZE * allocblock), 0);
-		*(fs->nptr) = *(fs->nptr) + 1;
-	    }
-	    else if(cwdlen > 64)
-	    {
-		read_cluster(buf, dcl);
-	    }
-	    memcpy(buf+cwdlen, &nent, 64);
-	    write_cluster(buf, dcl);
-	    fs->nde->d_length = swaplong(cwdlen + 64);
-            free(buf);
+        buf = xmalloc(GSSIZE * allocblock);
+        cwdlen = swaplong(fs->nde->d_length);
+        dcl = fs->fnew;
+        if((cwdlen % GSSIZE * allocblock) == 0)
+        {
+            dcl = alloc_new_cluster(dcl,
+                                    cwdlen / (GSSIZE * allocblock), 0);
+            *(fs->nptr) = *(fs->nptr) + 1;
+        }
+        else if(cwdlen > 64)
+        {
+            read_cluster(buf, dcl);
+        }
+        memcpy(buf+cwdlen, &nent, 64);
+        write_cluster(buf, dcl);
+        fs->nde->d_length = swaplong(cwdlen + 64);
+        free(buf);
     }
     else if(entry->d_type == 255)
     {
-        RecurseDir(fileno, swaplong(entry->d_length), fs, 
-		   (int (*) (QLDIR *, int, void *))ProcessSubFile);
+        RecurseDir(fileno, swaplong(entry->d_length), fs,
+                   (int (*) (QLDIR *, int, void *))ProcessSubFile);
     }
 
     return 0;
@@ -1235,11 +1235,11 @@ int MoveSubFiles(FSBLK *fs)
 
     for (d = 1; d < maxdir (); d++)
     {
-	entry = pdir + d;
-	if (swaplong (entry->d_length) + swapword (entry->d_szname) != 0)
-	{
-	    ProcessSubFile (entry, d, fs);
-	}
+        entry = pdir + d;
+        if (swaplong (entry->d_length) + swapword (entry->d_szname) != 0)
+        {
+            ProcessSubFile (entry, d, fs);
+        }
     }
     return 0;
 }
@@ -1264,36 +1264,36 @@ void writefile (char *fn, short dflag)
     struct stat s;
     short blksiz = GSSIZE * allocblock;
     ssize_t ignore __attribute__((unused));
-    
+
     qlnam = MakeQLName (fn, &nlen);
 
     if(dflag != 255)
     {
-	if(stat(fn, &s) == 0)
-	{
-	    if(s.st_size == 16)
-	    {
-		int fd;
-		char tbuf[16];
+        if(stat(fn, &s) == 0)
+        {
+            if(s.st_size == 16)
+            {
+                int fd;
+                char tbuf[16];
 
-		if((fd = open(fn, O_RDONLY|O_BINARY)) > -1)
-		{
-		    ignore = read(fd, tbuf, 16);
-		    if(memcmp(tbuf, QLDIRSTRING,16) == 0)
-		    {
-			dflag = 255;
-		    }
-		    close (fd);
-		}
-	    }
-	}
-	else
-	{
-	    fprintf(stderr, "Can't stat file %s\n", fn);
-	    exit(errno);
-	}
+                if((fd = open(fn, O_RDONLY|O_BINARY)) > -1)
+                {
+                    ignore = read(fd, tbuf, 16);
+                    if(memcmp(tbuf, QLDIRSTRING,16) == 0)
+                    {
+                        dflag = 255;
+                    }
+                    close (fd);
+                }
+            }
+        }
+        else
+        {
+            fprintf(stderr, "Can't stat file %s\n", fn);
+            exit(errno);
+        }
     }
-    
+
 
     if (list)
     {
@@ -1302,94 +1302,94 @@ void writefile (char *fn, short dflag)
 
     if ((fl = match_file (qlnam, &vers, &sdl)) != 0)
     {
-	if (dflag == 255)
-	{
-	    fputs ("Exists\n", stderr);
-	    exit (EEXIST);
-	}
-	else 
-	{
+        if (dflag == 255)
+        {
+            fputs ("Exists\n", stderr);
+            exit (EEXIST);
+        }
+        else
+        {
             if(!isatty(1))
             {
                 OWopt = 'A';
             }
-	    if (OWopt != 'A')
-	    {
-		fprintf (stderr, "file %s exists, overwrite [Y/N/A/Q] : ", qlnam);
-		do
-		{
-		    OWopt = getch ();
-		    OWopt = toupper (OWopt);
-		}
-		while (strchr ("\003ANYQ", OWopt) == NULL);
-		fprintf (stderr, "%c\n", OWopt);
-		if (OWopt == 'N')
-		{
-		    return;
-		}
-		else
-		{
-		    if (OWopt == 'Q' || OWopt == 3)
-		    {
-			exit (0);
-		    }
-		}
-	    }
-	    nvers = swapword (vers->d_version);
-	    del_file (fl, vers, sdl);
-	}
+            if (OWopt != 'A')
+            {
+                fprintf (stderr, "file %s exists, overwrite [Y/N/A/Q] : ", qlnam);
+                do
+                {
+                    OWopt = getch ();
+                    OWopt = toupper (OWopt);
+                }
+                while (strchr ("\003ANYQ", OWopt) == NULL);
+                fprintf (stderr, "%c\n", OWopt);
+                if (OWopt == 'N')
+                {
+                    return;
+                }
+                else
+                {
+                    if (OWopt == 'Q' || OWopt == 3)
+                    {
+                        exit (0);
+                    }
+                }
+            }
+            nvers = swapword (vers->d_version);
+            del_file (fl, vers, sdl);
+        }
     }
 
     if (dflag == 255)
     {
-	y = 64;
+        y = 64;
     }
     else
     {
 
-	if ((fl = open (fn, O_RDONLY | O_BINARY)) == -1)
-	{
-	    perror ("write file: could not open input file ");
-	    exit (errno);
-	}
-	y = s.st_size + 64;
-	{
-	    long stuff[2];
-	    lseek (fl, -8, SEEK_END);
-	    ignore = read (fl, stuff, 8);
-	    if (*stuff == *(long *) "XTcc")
-	    {
-		qdsize = *(stuff + 1);
-	    }
-	}
+        if ((fl = open (fn, O_RDONLY | O_BINARY)) == -1)
+        {
+            perror ("write file: could not open input file ");
+            exit (errno);
+        }
+        y = s.st_size + 64;
+        {
+            long stuff[2];
+            lseek (fl, -8, SEEK_END);
+            ignore = read (fl, stuff, 8);
+            if (*stuff == *(long *) "XTcc")
+            {
+                qdsize = *(stuff + 1);
+            }
+        }
 
-	err = lseek (fl, 0, SEEK_SET);	/* reposition to zero!!! */
-	if (err < 0)
-	    perror ("write file: lseek() on input file : ");
+        err = lseek (fl, 0, SEEK_SET);	/* reposition to zero!!! */
+        if (err < 0)
+            perror ("write file: lseek() on input file : ");
     }
 
     free_sect = swapword (b0->q5a_free);
     if (y > free_sect * GSSIZE)
     {
-	fprintf (stderr, " file %s too large (%ld %ld)\n", fn, y, free_sect);
-	exit (ENOSPC);
+        fprintf (stderr, " file %s too large (%ld %ld)\n", fn, y, free_sect);
+        exit (ENOSPC);
     }
 
     if (sdl == NULL)
     {
-	sdl = CheckDirLevel (qlnam, strlen(qlnam));
+        sdl = CheckDirLevel (qlnam, strlen(qlnam));
     }
 
     entry = GetNewDirEntry (sdl, &filenew, &nblock, &diroff);
     memset (entry, '\0', 64);
-    
+
     if (filenew & 0x800)
     {
-	flag = filenew - 0x800;
+        flag = filenew - 0x800;
     }
     else
     {
-	flag = 0;
+        flag = 0;
     }
 
     entry->d_length = swaplong (y);
@@ -1397,16 +1397,16 @@ void writefile (char *fn, short dflag)
 
     if (dflag != 255)
     {
-	if (qdsize == 0)
-	{
-	    entry->d_type = 0;
-	    entry->d_datalen = 0;
-	}
-	else
-	{
-	    entry->d_type = 1;
-	    entry->d_datalen = qdsize;	/* big endian already */
-	}
+        if (qdsize == 0)
+        {
+            entry->d_type = 0;
+            entry->d_datalen = 0;
+        }
+        else
+        {
+            entry->d_type = 1;
+            entry->d_datalen = qdsize;	/* big endian already */
+        }
     }
 
     memcpy (entry->d_name, qlnam, nlen);
@@ -1420,54 +1420,56 @@ void writefile (char *fn, short dflag)
 
     if (dflag == 255)
     {
-	filenew = alloc_new_cluster (filenew, 0, flag);
-	nblock++;
+        filenew = alloc_new_cluster (filenew, 0, flag);
+        nblock++;
     }
     else
     {
-	int nwr = 0;
-	
-	datbuf = xmalloc(blksiz);
-	enddat = (y < blksiz) ? y : blksiz;
-	err = read (fl, datbuf + 64, enddat - 64);
+        int nwr = 0;
 
-	memcpy (datbuf, entry, 64);
-	for (block = 0; y > 0;)
-	{
-	    i = alloc_new_cluster (filenew, block, flag);
-	    flag = 0;
+        datbuf = xmalloc(blksiz);
+        enddat = (y < blksiz) ? y : blksiz;
+        err = read (fl, datbuf + 64, enddat - 64);
 
-	    if (i < 0)
-	    {
-		fprintf (stderr, " filewrite failed : no free cluster\n");
-		exit (ENOSPC);
-	    }
-	    block++;
-	    nblock++;
+        memcpy (datbuf, entry, 64);
+        for (block = 0; y > 0;)
+        {
+            i = alloc_new_cluster (filenew, block, flag);
+            flag = 0;
 
-	    if(list)
-	    {
-		nwr += err;
+            if (i < 0)
+            {
+                fprintf (stderr, " filewrite failed : no free cluster\n");
+                exit (ENOSPC);
+            }
+            block++;
+            nblock++;
+
+            if(list)
+            {
+                nwr += err;
                 if(isatty(1))
                 {
-                    fprintf(stderr,"%8d\b\b\b\b\b\b\b\b", nwr); fflush(stderr);
+                    fprintf(stderr,"%8d\b\b\b\b\b\b\b\b", nwr);
+                    fflush(stderr);
                 }
                 else
                 {
-                    printf("%8d\n", nwr); fflush(stdout);
+                    printf("%8d\n", nwr);
+                    fflush(stdout);
                 }
-	    }
-	    
-	    write_cluster (datbuf, i);
+            }
 
-	    y -= blksiz;
+            write_cluster (datbuf, i);
 
-	    err = read (fl, datbuf, blksiz);
-	    if (err < 0)
-		perror ("write file: read on input file:");
-	}
-	close (fl);
-	free(datbuf);
+            y -= blksiz;
+
+            err = read (fl, datbuf, blksiz);
+            if (err < 0)
+                perror ("write file: read on input file:");
+        }
+        close (fl);
+        free(datbuf);
     }
 
     free (qlnam);
@@ -1477,12 +1479,12 @@ void writefile (char *fn, short dflag)
 
     if (dflag == 255)
     {
-	FSBLK fs;
-	fs.nde = entry;
-	fs.nptr = &nblock;
-	fs.fnew = filenew;
-	MoveSubFiles (&fs);
-	entry->d_type = 255;
+        FSBLK fs;
+        fs.nde = entry;
+        fs.nptr = &nblock;
+        fs.fnew = filenew;
+        MoveSubFiles (&fs);
+        entry->d_type = 255;
     }
 
     b0->q5a_free = swapword (free_sect - nblock * allocblock);
@@ -1492,26 +1494,26 @@ void writefile (char *fn, short dflag)
 
     if (sdl)
     {
-	SDL *msdl = NULL;
-	QLDIR *mentry;
-	char dirname[40];
+        SDL *msdl = NULL;
+        QLDIR *mentry;
+        char dirname[40];
 
-	memcpy (dirname, sdl->name, sdl->szname);
-	*(dirname + sdl->szname) = '\0';
-	if ((fl = match_file (dirname, &mentry, &msdl)) != 0)
-	{
-	    mentry->d_length = swaplong (sdl->flen);
-	    mentry->d_update = entry->d_update;
-	    dir_write_back (mentry, msdl, NULL);
-	}
+        memcpy (dirname, sdl->name, sdl->szname);
+        *(dirname + sdl->szname) = '\0';
+        if ((fl = match_file (dirname, &mentry, &msdl)) != 0)
+        {
+            mentry->d_length = swaplong (sdl->flen);
+            mentry->d_update = entry->d_update;
+            dir_write_back (mentry, msdl, NULL);
+        }
     }
 
     if(list && isatty(1))
-	fputc ('\n', stderr);
+        fputc ('\n', stderr);
 
     if(dflag == 255)
     {
-	AddSlist(entry, FileXDir(entry->d_fileno));
+        AddSlist(entry, FileXDir(entry->d_fileno));
     }
 }
 
@@ -1520,8 +1522,8 @@ int AddDirEntry (QLDIR * entry, int fileno, void *flag)
 {
     if (entry->d_type == 255)
     {
-	SDL *sdl = AddSlist(entry, fileno);
-	RecurseDir (fileno, sdl->flen, NULL, AddDirEntry);
+        SDL *sdl = AddSlist(entry, fileno);
+        RecurseDir (fileno, sdl->flen, NULL, AddDirEntry);
     }
     return 0;
 }
@@ -1534,16 +1536,16 @@ void BuildSubList (void)
 
     for (d = 1; d < maxdir (); d++)
     {
-	entry = pdir + d;
-	flen = swaplong (entry->d_length);
+        entry = pdir + d;
+        flen = swaplong (entry->d_length);
 
-	if (flen + swapword (entry->d_szname) != 0)
-	{
-	    if (entry->d_type == 255)
-	    {
-		AddDirEntry (entry, d, NULL);
-	    }
-	}
+        if (flen + swapword (entry->d_szname) != 0)
+        {
+            if (entry->d_type == 255)
+            {
+                AddDirEntry (entry, d, NULL);
+            }
+        }
     }
 }
 
@@ -1553,15 +1555,15 @@ void read_dir (void)
 
     for (i = 0; i < gclusters; i++)
     {
-	cl = fat_cl (i);
-	fn = fat_file (i);
+        cl = fat_cl (i);
+        fn = fat_file (i);
 
-	if (fn == 0)
-	{
-	    block_dir[block_max] = i;
-	    block_max++;
-	    read_cluster ((char *) pdir + GSSIZE * allocblock * cl, i);
-	}
+        if (fn == 0)
+        {
+            block_dir[block_max] = i;
+            block_max++;
+            read_cluster ((char *) pdir + GSSIZE * allocblock * cl, i);
+        }
     }
     BuildSubList ();
 }
@@ -1576,47 +1578,47 @@ void print_map (void)
 
     for (i = 0; i < gclusters; i++)
     {
-	cl = fat_cl (i);
-	fn = fat_file (i);
+        cl = fat_cl (i);
+        fn = fat_file (i);
 
-	printf ("%d\t%d\t%d\t(%03x, %03x) ", i, fn, cl, fn, cl);
+        printf ("%d\t%d\t%d\t(%03x, %03x) ", i, fn, cl, fn, cl);
 
-	if ((fn & 0xFF0) == 0xFD0 && (fn & 0xf) != 0xF)
-	{
-	    printf ("erased %2d\t", fn & 0xF);
-	}
+        if ((fn & 0xFF0) == 0xFD0 && (fn & 0xf) != 0xF)
+        {
+            printf ("erased %2d\t", fn & 0xF);
+        }
 
-	entry = NULL;
-	switch (fn)
-	{
-	    case 0x000:
-		printf ("directory");
-		break;
-	    case 0xF80:
-		printf ("map");
-		break;
-	    case 0xFDF:
-		printf ("unused");
-		break;
-	    case 0xFEF:
-		printf ("bad");
-		break;
-	    case 0xFFF:
-		printf ("not existent");
-		break;
-	    default:
-		entry = GetEntry (fn);
-		break;
-	}
-	if (entry)
-	{
-	    flag = 2;
-	    print_entry (entry, fn, &flag);
-	}
-	else
-	{
-	    putc ('\n', stdout);
-	}
+        entry = NULL;
+        switch (fn)
+        {
+        case 0x000:
+            printf ("directory");
+            break;
+        case 0xF80:
+            printf ("map");
+            break;
+        case 0xFDF:
+            printf ("unused");
+            break;
+        case 0xFEF:
+            printf ("bad");
+            break;
+        case 0xFFF:
+            printf ("not existent");
+            break;
+        default:
+            entry = GetEntry (fn);
+            break;
+        }
+        if (entry)
+        {
+            flag = 2;
+            print_entry (entry, fn, &flag);
+        }
+        else
+        {
+            putc ('\n', stdout);
+        }
     }
 }
 
@@ -1627,8 +1629,8 @@ void set_header (int ni, long h, QLDIR * entry, SDL * sdl)
 
     if (swaplong (entry->d_length) + swapword (entry->d_szname) == 0)
     {
-	fprintf (stderr, "file deleted ??\n");
-	exit (EBADF);
+        fprintf (stderr, "file deleted ??\n");
+        exit (EBADF);
     }
 
     i = FindCluster (ni, 0);
@@ -1646,14 +1648,14 @@ void dir_write_back (QLDIR * entry, SDL * sdl, short *off)
 
     if (sdl)
     {
-	UpdateSubEntry (entry, sdl, off);
+        UpdateSubEntry (entry, sdl, off);
     }
     else
     {
-	int i;
+        int i;
 
-	for (i = 0; i < block_max; i++)
-	    write_cluster (pdir + DIRSBLK * allocblock * i, block_dir[i]);
+        for (i = 0; i < block_max; i++)
+            write_cluster (pdir + DIRSBLK * allocblock * i, block_dir[i]);
     }
 }
 
@@ -1663,11 +1665,11 @@ int find_free_cluster (void)
 
     for (i = lac + 1; i < gclusters; i++)
     {
-	fflag = fat_file (i);
-	if ((fflag >> 4) == 0xFD)
-	{
-	    break;
-	}
+        fflag = fat_file (i);
+        if ((fflag >> 4) == 0xFD)
+        {
+            break;
+        }
     }
     return (i < gclusters ? i : -1);
 }
@@ -1678,18 +1680,18 @@ int alloc_new_cluster (int fnum, int iblk, short flag)
 
     if (flag)
     {
-	i = flag;
+        i = flag;
     }
     else
     {
-	i = find_free_cluster ();
+        i = find_free_cluster ();
     }
 
     if (i != -1)
     {
-	set_fat_file (i, fnum);
-	set_fat_cl (i, iblk);
-	lac = i;
+        set_fat_file (i, fnum);
+        set_fat_cl (i, iblk);
+        lac = i;
     }
     return i;
 }
@@ -1701,14 +1703,14 @@ void free_cluster (long i)
 
     if (i > 0)
     {
-	fn = fat_file (i);
-	dfn = 0xFD0 | (0xf & fn);
-	set_fat_file (i, dfn);
+        fn = fat_file (i);
+        dfn = 0xFD0 | (0xf & fn);
+        set_fat_file (i, dfn);
     }
     else
     {
-	fprintf (stderr, "freeing cluster 0 ??? !!!\n");
-	exit (EBADF);
+        fprintf (stderr, "freeing cluster 0 ??? !!!\n");
+        exit (EBADF);
     }
 }
 
@@ -1716,22 +1718,22 @@ void format (char *frmt, char *argfname)
 {
     static char ltp_dd[] =
     {
-	0, 3, 6, 0x80, 0x83, 0x86, 1, 4,
-	7, 0x81, 0x84, 0x87, 2, 5, 8, 0x82, 0x85, 0x88
+        0, 3, 6, 0x80, 0x83, 0x86, 1, 4,
+        7, 0x81, 0x84, 0x87, 2, 5, 8, 0x82, 0x85, 0x88
     };
 
     static char ptl_dd[] =
     {
-	0, 6, 0x0c, 1, 7, 0x0d,
-	2, 8, 0x0e, 3, 9, 0x0f, 4, 0x0a, 0x10, 5, 0x0b, 0x11
+        0, 6, 0x0c, 1, 7, 0x0d,
+        2, 8, 0x0e, 3, 9, 0x0f, 4, 0x0a, 0x10, 5, 0x0b, 0x11
     };
 
     static char ltp_hd[] =
     {
-	0, 2, 4, 6, 8, 0xa, 0xc, 0xe, 0x10,
-	0x80, 0x82, 0x84, 0x86, 0x88, 0x8a, 0x8c, 0x8e, 0x90,
-	1, 3, 5, 7, 9, 0xb, 0xd, 0xf, 0x11,
-	0x81, 0x83, 0x85, 0x87, 0x89, 0x8b, 0x8d, 0x8f, 0x91
+        0, 2, 4, 6, 8, 0xa, 0xc, 0xe, 0x10,
+        0x80, 0x82, 0x84, 0x86, 0x88, 0x8a, 0x8c, 0x8e, 0x90,
+        1, 3, 5, 7, 9, 0xb, 0xd, 0xf, 0x11,
+        0x81, 0x83, 0x85, 0x87, 0x89, 0x8b, 0x8d, 0x8f, 0x91
     };
 
     int cls;
@@ -1741,85 +1743,85 @@ void format (char *frmt, char *argfname)
     b0->q5a_rand = swapword (t & 0xffff);
     if(argfname == NULL)
     {
-	argfname = "";
+        argfname = "";
     }
 
     ZeroSomeSectors(fd, *frmt);
-    
+
     if (*frmt == 'd')		/* 720 K format */
     {
-	ql5a = 1;
-	memcpy (b0, "QL5A          ", 14);
-	memcpy (b0->q5a_mnam, argfname, (strlen (argfname) <= 10 ?
-					 strlen (argfname) : 10));
-	memcpy (b0->q5a_lgph, ltp_dd, 18);
-	memcpy (b0->q5a_phlg, ptl_dd, 18);
+        ql5a = 1;
+        memcpy (b0, "QL5A          ", 14);
+        memcpy (b0->q5a_mnam, argfname, (strlen (argfname) <= 10 ?
+                                         strlen (argfname) : 10));
+        memcpy (b0->q5a_lgph, ltp_dd, 18);
+        memcpy (b0->q5a_phlg, ptl_dd, 18);
 
-	gsides = 2;
-	b0->q5a_trak = swapword (80);
-	gtracks = 80;
-	b0->q5a_strk = swapword (9);
-	gsectors = 9;
-	b0->q5a_scyl = swapword (18);
-	gspcyl = 18;
-	goffset = 5;
-	b0->q5a_soff = swapword (5);
-	b0->q5a_eodbl = 0;
-	b0->q5a_eodby = swapword (64);
-	b0->q5a_free = swapword (1434);
-	b0->q5a_good = b0->q5a_totl = swapword (1440);
-	b0->q5a_allc = swapword (3);
-	allocblock = 3;
+        gsides = 2;
+        b0->q5a_trak = swapword (80);
+        gtracks = 80;
+        b0->q5a_strk = swapword (9);
+        gsectors = 9;
+        b0->q5a_scyl = swapword (18);
+        gspcyl = 18;
+        goffset = 5;
+        b0->q5a_soff = swapword (5);
+        b0->q5a_eodbl = 0;
+        b0->q5a_eodby = swapword (64);
+        b0->q5a_free = swapword (1434);
+        b0->q5a_good = b0->q5a_totl = swapword (1440);
+        b0->q5a_allc = swapword (3);
+        allocblock = 3;
 
-	set_fat_file (0, 0xF80);	/* FAT entry for FAT */
-	set_fat_cl (0, 0);
-	set_fat_file (1, 0);	/*  ...  for directory */
-	set_fat_cl (1, 0);
-	gclusters = gtracks * gspcyl / allocblock;
-	for (cls = 2; cls < gclusters; cls++)
-	{			/* init rest of FAT */
-	    set_fat_file (cls, 0xFDF);
-	    set_fat_cl (cls, 0xFFF);
-	}
+        set_fat_file (0, 0xF80);	/* FAT entry for FAT */
+        set_fat_cl (0, 0);
+        set_fat_file (1, 0);	/*  ...  for directory */
+        set_fat_cl (1, 0);
+        gclusters = gtracks * gspcyl / allocblock;
+        for (cls = 2; cls < gclusters; cls++)
+        {   /* init rest of FAT */
+            set_fat_file (cls, 0xFDF);
+            set_fat_cl (cls, 0xFFF);
+        }
     }
     else if (*frmt == 'h')
     {
-	memcpy (b0, "QL5B          ", 14);
-	ql5a = 0;
+        memcpy (b0, "QL5B          ", 14);
+        ql5a = 0;
 
-	memcpy (b0->q5a_mnam, argfname,
-		(strlen (argfname) <= 10 ? strlen (argfname) : 10));
-	memcpy (b0->q5a_lgph, ltp_hd, 36);
+        memcpy (b0->q5a_mnam, argfname,
+                (strlen (argfname) <= 10 ? strlen (argfname) : 10));
+        memcpy (b0->q5a_lgph, ltp_hd, 36);
 
-	gsides = 2;
-	b0->q5a_trak = swapword (80);
-	gtracks = 80;
-	b0->q5a_strk = swapword (18);
-	gsectors = 18;
-	b0->q5a_scyl = swapword (36);
-	gspcyl = 36;
-	goffset = 2;
-	b0->q5a_soff = swapword (2);
-	b0->q5a_eodbl = 0;
-	b0->q5a_eodby = swapword (64);
-	b0->q5a_free = swapword (2871);
-	b0->q5a_good = b0->q5a_totl = swapword (2880);
-	b0->q5a_allc = swapword (3);
-	allocblock = 3;
+        gsides = 2;
+        b0->q5a_trak = swapword (80);
+        gtracks = 80;
+        b0->q5a_strk = swapword (18);
+        gsectors = 18;
+        b0->q5a_scyl = swapword (36);
+        gspcyl = 36;
+        goffset = 2;
+        b0->q5a_soff = swapword (2);
+        b0->q5a_eodbl = 0;
+        b0->q5a_eodby = swapword (64);
+        b0->q5a_free = swapword (2871);
+        b0->q5a_good = b0->q5a_totl = swapword (2880);
+        b0->q5a_allc = swapword (3);
+        allocblock = 3;
 
-	set_fat_file (0, 0xF80);	/* FAT entry for FAT */
-	set_fat_cl (0, 0);
-	set_fat_file (1, 0xf80);
-	set_fat_cl (1, 1);
-	set_fat_file (2, 0);	/*  ...  for directory */
-	set_fat_cl (2, 0);
+        set_fat_file (0, 0xF80);	/* FAT entry for FAT */
+        set_fat_cl (0, 0);
+        set_fat_file (1, 0xf80);
+        set_fat_cl (1, 1);
+        set_fat_file (2, 0);	/*  ...  for directory */
+        set_fat_cl (2, 0);
 
-	gclusters = gtracks * gspcyl / allocblock;
-	for (cls = 3; cls < gclusters; cls++)
-	{			/* init rest of FAT */
-	    set_fat_file (cls, 0xFDF);
-	    set_fat_cl (cls, 0xFFF);
-	}
+        gclusters = gtracks * gspcyl / allocblock;
+        for (cls = 3; cls < gclusters; cls++)
+        {   /* init rest of FAT */
+            set_fat_file (cls, 0xFDF);
+            set_fat_cl (cls, 0xFFF);
+        }
     }
     make_convtable (0);
     write_b0fat ();
@@ -1834,43 +1836,43 @@ int main (int ac, char **av)
     int dofmt = 0;
     long np1 = 0, np2 = 0;
     char *pd,dev[64];
-    
+
     if (ac < 2)
     {
-	usage ("too few parameters");
+        usage ("too few parameters");
     }
 
     for (i =1; i < ac; i++)
     {
-	if ((av[i][0] == '-') 
+        if ((av[i][0] == '-')
 #ifdef DOS_LIKE
-	    || (av[i][0] == '/')
+                || (av[i][0] == '/')
 #endif
-	    )
-	{
-	    switch (av[i][1])
-	    {
-		case 'f':
-		    dofmt = i;
-		case 'x':
-		case 'r':
-		case 'w':
-		case 'W':
-		case 'M':
-		    mode = O_RDWR;
-		    i = ac;
-		    break;
-                case 'v':
-                    puts ("QLTOOLS for "OSNAME" (version "VERSION")");
-                    exit(0);
-                    break;
+           )
+        {
+            switch (av[i][1])
+            {
+            case 'f':
+                dofmt = i;
+            case 'x':
+            case 'r':
+            case 'w':
+            case 'W':
+            case 'M':
+                mode = O_RDWR;
+                i = ac;
+                break;
+            case 'v':
+                puts ("QLTOOLS for "OSNAME" (version "VERSION")");
+                exit(0);
+                break;
 
-	    }
-	}
+            }
+        }
     }
 
     pd = av[1];
-    
+
 #if defined(__NT__) || defined(__MINGW32__)
     if(*(pd+1) ==  ':' && isalpha(*pd))
     {
@@ -1878,7 +1880,7 @@ int main (int ac, char **av)
         *(dev+4) = *pd;
         pd = dev;
     }
-#endif    
+#endif
 #ifdef __linux__
     if(*(pd+1) ==  ':' && isalpha(*pd))
     {
@@ -1887,138 +1889,138 @@ int main (int ac, char **av)
         pd = dev;
     }
 #endif
-    
+
     fd = OpenQLDevice (pd, mode);
 
     if ((int) fd < 0)
     {
-	perror ("could not open image");
-	usage ("image file not opened");
+        perror ("could not open image");
+        usage ("image file not opened");
     }
 
     timeadjust = GetTimeZone ();
 
     if ((b0 = xmalloc (GSSIZE * MAXALB)) != NULL)
     {
-	if (dofmt)
-	{
-	    format (av[dofmt] + 2, av[dofmt + 1]);
-	    CloseQLDevice (fd);
-	    exit (0);
-	}
+        if (dofmt)
+        {
+            format (av[dofmt] + 2, av[dofmt + 1]);
+            CloseQLDevice (fd);
+            exit (0);
+        }
 
-	read_b0fat (0);
-	pdir = xmalloc (GSSIZE * allocblock * (bleod + 6));
-	read_dir ();
+        read_b0fat (0);
+        pdir = xmalloc (GSSIZE * allocblock * (bleod + 6));
+        read_dir ();
 
-	for (i = 2; i < ac; i++)
-	{
-	    char c = 0;
+        for (i = 2; i < ac; i++)
+        {
+            char c = 0;
 
-	    if (av[i][0] == '-')
-	    {
-		OWopt = 0;
-		switch (c = av[i][1])
-		{
-		    case 'l':
-			list = 1;
-			break;
-		    case 't':
-			tranql ^= 1;
-			break;
-		    case 'U':
-		    case 'u':
-			if (av[i][2])
-			{
-			    np1 = atol (av[i] + 2);
-			}
-			else
-			{
-			    i++;
-			    np1 = atol (av[i]);
-			}
-			dump_cluster (np1, c == 'U');
-			break;
-		    case 'd':
-			print_dir (0);
-			break;
-		    case 's':
-			print_dir (1);
-			break;
-		    case 'i':
-			print_info ();
-			break;
-		    case 'm':
-			print_map ();
-			break;
-		    case 'c':
-			make_convtable (1);
-			break;
-		    case 'n':
-			i++;
-			np1 = match_file (av[i], &entry, NULL);
-			if (np1)
-			{
-			    cat_file (np1, entry);
-			}
-			else
-			{
-			    fprintf (stderr, "Invalid file\n");
-			}
-			break;
-		    case 'W':
-			OWopt = 'A';
-		    case 'w':
-			while (av[i + 1] && *av[i + 1] != '-')
-			{
-			    i++;
-			    writefile (av[i], 0);
-			}
-			break;
-		    case 'r':
-			i++;
-			np1 = match_file (av[i], &entry, &sdl);
-			if (np1)
-			{
-			    del_file (np1, entry, sdl);
-			}
-			break;
-		    case 'M':
-			i++;
-			writefile (av[i], 255);
-			break;
+            if (av[i][0] == '-')
+            {
+                OWopt = 0;
+                switch (c = av[i][1])
+                {
+                case 'l':
+                    list = 1;
+                    break;
+                case 't':
+                    tranql ^= 1;
+                    break;
+                case 'U':
+                case 'u':
+                    if (av[i][2])
+                    {
+                        np1 = atol (av[i] + 2);
+                    }
+                    else
+                    {
+                        i++;
+                        np1 = atol (av[i]);
+                    }
+                    dump_cluster (np1, c == 'U');
+                    break;
+                case 'd':
+                    print_dir (0);
+                    break;
+                case 's':
+                    print_dir (1);
+                    break;
+                case 'i':
+                    print_info ();
+                    break;
+                case 'm':
+                    print_map ();
+                    break;
+                case 'c':
+                    make_convtable (1);
+                    break;
+                case 'n':
+                    i++;
+                    np1 = match_file (av[i], &entry, NULL);
+                    if (np1)
+                    {
+                        cat_file (np1, entry);
+                    }
+                    else
+                    {
+                        fprintf (stderr, "Invalid file\n");
+                    }
+                    break;
+                case 'W':
+                    OWopt = 'A';
+                case 'w':
+                    while (av[i + 1] && *av[i + 1] != '-')
+                    {
+                        i++;
+                        writefile (av[i], 0);
+                    }
+                    break;
+                case 'r':
+                    i++;
+                    np1 = match_file (av[i], &entry, &sdl);
+                    if (np1)
+                    {
+                        del_file (np1, entry, sdl);
+                    }
+                    break;
+                case 'M':
+                    i++;
+                    writefile (av[i], 255);
+                    break;
 
-		    case 'x':
-			i++;
-			np1 = match_file (av[i], &entry, &sdl);
-			if (np1)
-			{
-			    i++;
-			    np2 = strtol (av[i], NULL, 0);
-			    if (np2)
-			    {
-				set_header (np1, np2, entry, sdl);
-			    }
-			}
-			break;
-		    default:
-			usage ("bad option");
-			break;
-		}
-	    }
-	    else
-	    {
-		np1 = match_file (av[i], &entry, NULL);
-		if (np1)
-		{
-		    cat_file (np1, entry);
-		}
-	    }
-	}
-	CloseQLDevice (fd);
+                case 'x':
+                    i++;
+                    np1 = match_file (av[i], &entry, &sdl);
+                    if (np1)
+                    {
+                        i++;
+                        np2 = strtol (av[i], NULL, 0);
+                        if (np2)
+                        {
+                            set_header (np1, np2, entry, sdl);
+                        }
+                    }
+                    break;
+                default:
+                    usage ("bad option");
+                    break;
+                }
+            }
+            else
+            {
+                np1 = match_file (av[i], &entry, NULL);
+                if (np1)
+                {
+                    cat_file (np1, entry);
+                }
+            }
+        }
+        CloseQLDevice (fd);
     }
     return (0);
-/* This is to prevent compiler warning !! */
-/* NOTREACHED */
+    /* This is to prevent compiler warning !! */
+    /* NOTREACHED */
     (void)rcsid;
 }
