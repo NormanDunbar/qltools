@@ -1585,7 +1585,7 @@ void format(char *frmt, char *argfname) {
     write_b0fat ();
 }
 
-int main(int ac, char **av) {
+int main(int argc, char **argv) {
     int i=0;
     QLDIR *entry;
     SDL *sdl;
@@ -1594,17 +1594,17 @@ int main(int ac, char **av) {
     long np1 = 0, np2 = 0;
     char *pd,dev[64];
 
-    if (ac < 2) {
+    if (argc < 2) {
         usage ("too few parameters");
     }
 
-    for (i =1; i < ac; i++) {
-        if ((av[i][0] == '-')
+    for (i =1; i < argc; i++) {
+        if ((argv[i][0] == '-')
 #ifdef DOS_LIKE
-                || (av[i][0] == '/')
+                || (argv[i][0] == '/')
 #endif
            ) {
-            switch (av[i][1]) {
+            switch (argv[i][1]) {
             case 'f':
                 dofmt = i;
             case 'x':
@@ -1613,7 +1613,7 @@ int main(int ac, char **av) {
             case 'W':
             case 'M':
                 mode = O_RDWR;
-                i = ac;
+                i = argc;
                 break;
             case 'v':
                 puts("QLTOOLS for "OSNAME" (version "VERSION")");
@@ -1624,7 +1624,7 @@ int main(int ac, char **av) {
         }
     }
 
-    pd = av[1];
+    pd = argv[1];
 
 #if defined(__NT__) || defined(__MINGW32__)
     if(*(pd+1) ==  ':' && isalpha(*pd)) {
@@ -1652,7 +1652,7 @@ int main(int ac, char **av) {
 
     if ((b0 = xmalloc (GSSIZE * MAXALB)) != NULL) {
         if (dofmt) {
-            format (av[dofmt] + 2, av[dofmt + 1]);
+            format (argv[dofmt] + 2, argv[dofmt + 1]);
             CloseQLDevice(fd);
             exit (0);
         }
@@ -1661,12 +1661,12 @@ int main(int ac, char **av) {
         pdir = xmalloc(GSSIZE * allocblock * (bleod + 6));
         read_dir ();
 
-        for (i = 2; i < ac; i++) {
+        for (i = 2; i < argc; i++) {
             char c = 0;
 
-            if (av[i][0] == '-') {
+            if (argv[i][0] == '-') {
                 OWopt = 0;
-                switch (c = av[i][1]) {
+                switch (c = argv[i][1]) {
                 case 'l':
                     list = 1;
                     break;
@@ -1675,12 +1675,12 @@ int main(int ac, char **av) {
                     break;
                 case 'U':
                 case 'u':
-                    if (av[i][2]) {
-                        np1 = atol(av[i] + 2);
+                    if (argv[i][2]) {
+                        np1 = atol(argv[i] + 2);
                     }
                     else {
                         i++;
-                        np1 = atol(av[i]);
+                        np1 = atol(argv[i]);
                     }
                     dump_cluster(np1, c == 'U');
                     break;
@@ -1701,7 +1701,7 @@ int main(int ac, char **av) {
                     break;
                 case 'n':
                     i++;
-                    np1 = match_file(av[i], &entry, NULL);
+                    np1 = match_file(argv[i], &entry, NULL);
                     if (np1) {
                         cat_file(np1, entry);
                     }
@@ -1712,29 +1712,29 @@ int main(int ac, char **av) {
                 case 'W':
                     OWopt = 'A';
                 case 'w':
-                    while (av[i + 1] && *av[i + 1] != '-') {
+                    while (argv[i + 1] && *argv[i + 1] != '-') {
                         i++;
-                        writefile(av[i], 0);
+                        writefile(argv[i], 0);
                     }
                     break;
                 case 'r':
                     i++;
-                    np1 = match_file(av[i], &entry, &sdl);
+                    np1 = match_file(argv[i], &entry, &sdl);
                     if (np1) {
                         del_file(np1, entry, sdl);
                     }
                     break;
                 case 'M':
                     i++;
-                    writefile(av[i], 255);
+                    writefile(argv[i], 255);
                     break;
 
                 case 'x':
                     i++;
-                    np1 = match_file(av[i], &entry, &sdl);
+                    np1 = match_file(argv[i], &entry, &sdl);
                     if (np1) {
                         i++;
-                        np2 = strtol(av[i], NULL, 0);
+                        np2 = strtol(argv[i], NULL, 0);
                         if (np2) {
                             set_header(np1, np2, entry, sdl);
                         }
@@ -1746,7 +1746,7 @@ int main(int ac, char **av) {
                 }
             }
             else {
-                np1 = match_file(av[i], &entry, NULL);
+                np1 = match_file(argv[i], &entry, NULL);
                 if (np1) {
                     cat_file(np1, entry);
                 }
