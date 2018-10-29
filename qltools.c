@@ -422,7 +422,7 @@ void del_file(long fnum, QLDIR * entry, SDL * sdl) {
         }
     }
 
-    b0->q5a_free = swapword(freed * allocblock + swapword (b0->q5a_free));
+    b0->q5a_free_sectors = swapword(freed * allocblock + swapword (b0->q5a_free_sectors));
 
     entry->d_szname = 0;
     entry->d_length = 0;
@@ -478,30 +478,30 @@ void usage(char *error) {
 void print_info(void) {
     short i;
 
-    printf("Disk ID          : %.4s\n", b0->q5a_id);
-    printf("Disk Label       : %.10s\n", b0->q5a_mnam);
-    printf("sectors per track: %i\n", gsectors);
-    printf("sectors per cyl. : %i\n", gspcyl);
-    printf("number of cylind.: %i\n", gtracks);
-    printf("allocation block : %i\n", allocblock);
-    printf("sector offset/cyl: %i\n", goffset);
-    printf("random           : %04x\n", swapword (b0->q5a_rand));
-    printf("Updates          : %" PRIu32 "\n", swaplong (b0->q5a_mupd));
-    printf("free sectors     : %i\n", swapword (b0->q5a_free));
-    printf("good sectors     : %i\n", swapword (b0->q5a_good));
-    printf("total sectors    : %i\n", swapword (b0->q5a_totl));
+    printf("Disk ID               : %.4s\n", b0->q5a_id);
+    printf("Disk Label            : %.10s\n", b0->q5a_medium_name);
+    printf("Sectors per track     : %i\n", gsectors);
+    printf("Sectors per cylinder  : %i\n", gspcyl);
+    printf("Number of cylinder    : %i\n", gtracks);
+    printf("Allocation block      : %i\n", allocblock);
+    printf("Sector offset/cylinder: %i\n", goffset);
+    printf("Random                : %04x\n", swapword (b0->q5a_random));
+    printf("Updates               : %" PRIu32 "\n", swaplong (b0->q5a_update_count));
+    printf("Free sectors          : %i\n", swapword (b0->q5a_free_sectors));
+    printf("Good sectors          : %i\n", swapword (b0->q5a_good_sectors));
+    printf("Total sectors         : %i\n", swapword (b0->q5a_total_sectors));
 
-    printf("directory is     : %u sectors and %u bytes\n", bleod, byeod);
+    printf("Directory is          : %u sectors and %u bytes\n", bleod, byeod);
 
-    printf("\nlogical-to-physical sector mapping table:\n\n");
+    printf("\nLogical-to-physical sector mapping table:\n\n");
     for (i = 0; i < gspcyl; i++)
-        printf("%x ", b0->q5a_lgph[i]);
+        printf("%x ", b0->q5a_log_to_phys[i]);
     putc('\n', stdout);
 
     if (ql5a) {
-        printf("\nphysical-to-logical sector mapping table:\n\n");
+        printf("\nPhysical-to-logical sector mapping table:\n\n");
         for (i = 0; i < gspcyl; i++)
-            printf("%x ", b0->q5a_phlg[i]);
+            printf("%x ", b0->q5a_phys_to_log[i]);
     }
     putc('\n', stdout);
 }
@@ -623,9 +623,9 @@ void print_dir(short flag) {
     QLDIR *entry;
 
     if (flag == 0) {
-        printf("%.10s\n", b0->q5a_mnam);
+        printf("%.10s\n", b0->q5a_medium_name);
         printf("%i/%i sectors.\n\n",
-               swapword(b0->q5a_free), swapword (b0->q5a_good));
+               swapword(b0->q5a_free_sectors), swapword (b0->q5a_good_sectors));
     }
 
     for (d = 1; d < maxdir (); d++) {
@@ -731,14 +731,14 @@ void read_b0fat(int argconv) {
 
     ql5a = b0->q5a_id[3] == 'A';
 
-    gtracks = swapword(b0->q5a_trak);
-    gsectors = swapword(b0->q5a_strk);
-    gspcyl = swapword(b0->q5a_scyl);
+    gtracks = swapword(b0->q5a_tracks);
+    gsectors = swapword(b0->q5a_sectors_track);
+    gspcyl = swapword(b0->q5a_sectors_cyl);
     gsides = gspcyl / gsectors;
-    goffset = swapword(b0->q5a_soff);
-    bleod = swapword(b0->q5a_eodbl);
-    byeod = swapword(b0->q5a_eodby);
-    allocblock = swapword(b0->q5a_allc);
+    goffset = swapword(b0->q5a_sector_offset);
+    bleod = swapword(b0->q5a_eod_block);
+    byeod = swapword(b0->q5a_eod_byte);
+    allocblock = swapword(b0->q5a_allocation_blocks);
     gclusters = gtracks * gspcyl / allocblock;
 
     make_convtable(argconv);
@@ -749,7 +749,7 @@ void read_b0fat(int argconv) {
 void write_b0fat(void) {
     int i;
 
-    b0->q5a_mupd = swaplong(swaplong (b0->q5a_mupd) + 1);
+    b0->q5a_update_count = swaplong(swaplong (b0->q5a_update_count) + 1);
 
     for (i = 0; fat_file(i) == 0xf80; i++) {
         write_cluster((uint8_t *) b0 + i * allocblock * GSSIZE, i);
@@ -1181,7 +1181,7 @@ void writefile(char *fn, short dflag) {
             perror("write file: lseek() on input file : ");
     }
 
-    free_sect = swapword(b0->q5a_free);
+    free_sect = swapword(b0->q5a_free_sectors);
     if (y > free_sect * GSSIZE) {
         fprintf(stderr, " file %s too large (%ld %ld)\n", fn, y, free_sect);
         exit(ENOSPC);
@@ -1273,8 +1273,8 @@ void writefile(char *fn, short dflag) {
 
     free (qlnam);
 
-    b0->q5a_eodbl = swapword(bleod);
-    b0->q5a_eodby = swapword(byeod);
+    b0->q5a_eod_block = swapword(bleod);
+    b0->q5a_eod_byte = swapword(byeod);
 
     if (dflag == 255) {
         FSBLK fs;
@@ -1285,7 +1285,7 @@ void writefile(char *fn, short dflag) {
         entry->d_type = 255;
     }
 
-    b0->q5a_free = swapword(free_sect - nblock * allocblock);
+    b0->q5a_free_sectors = swapword(free_sect - nblock * allocblock);
 
     write_b0fat();
     dir_write_back(entry, sdl, &diroff);
@@ -1501,7 +1501,7 @@ void format(char *frmt, char *argfname) {
     time_t t;
 
     t = time (NULL);
-    b0->q5a_rand = swapword(t & 0xffff);
+    b0->q5a_random = swapword(t & 0xffff);
     if(argfname == NULL) {
         argfname = "";
     }
@@ -1511,25 +1511,25 @@ void format(char *frmt, char *argfname) {
     if (*frmt == 'd')		/* 720 K format */ {
         ql5a = 1;
         memcpy(b0, "QL5A          ", 14);
-        memcpy(b0->q5a_mnam, argfname, (strlen(argfname) <= 10 ?
+        memcpy(b0->q5a_medium_name, argfname, (strlen(argfname) <= 10 ?
                                          strlen(argfname) : 10));
-        memcpy(b0->q5a_lgph, ltp_dd, 18);
-        memcpy(b0->q5a_phlg, ptl_dd, 18);
+        memcpy(b0->q5a_log_to_phys, ltp_dd, 18);
+        memcpy(b0->q5a_phys_to_log, ptl_dd, 18);
 
         gsides = 2;
-        b0->q5a_trak = swapword(80);
+        b0->q5a_tracks = swapword(80);
         gtracks = 80;
-        b0->q5a_strk = swapword(9);
+        b0->q5a_sectors_track = swapword(9);
         gsectors = 9;
-        b0->q5a_scyl = swapword(18);
+        b0->q5a_sectors_cyl = swapword(18);
         gspcyl = 18;
         goffset = 5;
-        b0->q5a_soff = swapword(5);
-        b0->q5a_eodbl = 0;
-        b0->q5a_eodby = swapword(64);
-        b0->q5a_free = swapword(1434);
-        b0->q5a_good = b0->q5a_totl = swapword(1440);
-        b0->q5a_allc = swapword(3);
+        b0->q5a_sector_offset = swapword(5);
+        b0->q5a_eod_block = 0;
+        b0->q5a_eod_byte = swapword(64);
+        b0->q5a_free_sectors = swapword(1434);
+        b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1440);
+        b0->q5a_allocation_blocks = swapword(3);
         allocblock = 3;
 
         set_fat_file(0, 0xF80);	/* FAT entry for FAT */
@@ -1547,24 +1547,24 @@ void format(char *frmt, char *argfname) {
         memcpy(b0, "QL5B          ", 14);
         ql5a = 0;
 
-        memcpy(b0->q5a_mnam, argfname,
+        memcpy(b0->q5a_medium_name, argfname,
                (strlen (argfname) <= 10 ? strlen (argfname) : 10));
-        memcpy(b0->q5a_lgph, ltp_hd, 36);
+        memcpy(b0->q5a_log_to_phys, ltp_hd, 36);
 
         gsides = 2;
-        b0->q5a_trak = swapword(80);
+        b0->q5a_tracks = swapword(80);
         gtracks = 80;
-        b0->q5a_strk = swapword(18);
+        b0->q5a_sectors_track = swapword(18);
         gsectors = 18;
-        b0->q5a_scyl = swapword(36);
+        b0->q5a_sectors_cyl = swapword(36);
         gspcyl = 36;
         goffset = 2;
-        b0->q5a_soff = swapword(2);
-        b0->q5a_eodbl = 0;
-        b0->q5a_eodby = swapword(64);
-        b0->q5a_free = swapword(2871);
-        b0->q5a_good = b0->q5a_totl = swapword(2880);
-        b0->q5a_allc = swapword(3);
+        b0->q5a_sector_offset = swapword(2);
+        b0->q5a_eod_block = 0;
+        b0->q5a_eod_byte = swapword(64);
+        b0->q5a_free_sectors = swapword(2871);
+        b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(2880);
+        b0->q5a_allocation_blocks = swapword(3);
         allocblock = 3;
 
         set_fat_file(0, 0xF80);	/* FAT entry for FAT */

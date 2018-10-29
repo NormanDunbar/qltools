@@ -43,22 +43,22 @@ typedef struct PACKED
 typedef struct PACKED
 {
     char q5a_id[4];
-    uint8_t q5a_mnam[10];
-    uint16_t q5a_rand;
-    uint32_t q5a_mupd;
-    uint16_t q5a_free;
-    uint16_t q5a_good;
-    uint16_t q5a_totl;
-    uint16_t q5a_strk;
-    uint16_t q5a_scyl;
-    uint16_t q5a_trak;
-    uint16_t q5a_allc;
-    uint16_t q5a_eodbl;
-    uint16_t q5a_eodby;
-    uint16_t q5a_soff;
-    uint8_t q5a_lgph[18];
-    uint8_t q5a_phlg[18];
-    uint8_t q5a_spr0[20];
+    uint8_t q5a_medium_name[10];
+    uint16_t q5a_random;
+    uint32_t q5a_update_count;
+    uint16_t q5a_free_sectors;
+    uint16_t q5a_good_sectors;
+    uint16_t q5a_total_sectors;
+    uint16_t q5a_sectors_track;
+    uint16_t q5a_sectors_cyl;
+    uint16_t q5a_tracks;
+    uint16_t q5a_allocation_blocks;
+    uint16_t q5a_eod_block;
+    uint16_t q5a_eod_byte;
+    uint16_t q5a_sector_offset;
+    uint8_t q5a_log_to_phys[18];
+    uint8_t q5a_phys_to_log[18];
+    uint8_t q5a_spare[20];
     uint8_t map[1];
 } BLOCK0;
 
@@ -93,9 +93,9 @@ extern BLOCK0 *b0;
 /* ----------- logical to physical translation macros -------------------- */
 
 #define LTP_TRACK(_sect_)   ((_sect_)/gspcyl)
-#define LTP_SIDE(_sect_)    (b0->q5a_lgph[(_sect_)%gspcyl] &0x80 ? 1 : 0)
+#define LTP_SIDE(_sect_)    (b0->q5a_log_to_phys[(_sect_)%gspcyl] &0x80 ? 1 : 0)
 #define LTP_SCT(_sect_) \
-       (((0x7f& b0->q5a_lgph[(_sect_)%gspcyl])+ \
+       (((0x7f& b0->q5a_log_to_phys[(_sect_)%gspcyl])+ \
        goffset*LTP_TRACK(_sect_)) % gsectors)
 #define LTP_SECT(_sect_)    (LTP_SCT(_sect_)+1)
 
@@ -129,4 +129,3 @@ extern void usage(char *);
 #ifdef VMS
 char *strdup(const char *);
 #endif
-
