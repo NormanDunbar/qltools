@@ -23,6 +23,9 @@
  * maintainable. Split system specific code into individual directories and
  * added code for NT and OS2.
  *
+ * Revision 2.17.1 2018/10/29 NDunbar
+ * Much reformatting of code, renaming to give better names etc.
+ *
  * $Log: qltools.c,v $
  * Revision 2.11  1996/07/14 11:57:07  jrh
  * Tidied up code
@@ -79,7 +82,7 @@ static char rcsid[] = "$Id: qltools.c,v 2.11 1996/07/14 11:57:07 jrh Exp jrh $";
 #include "qltools.h"
 
 /* -------------------------- globals ----------------------------------- */
-int gsides, gtracks, gsectors, goffset, allocblock, gclusters, gspcyl;
+int gNumberOfSides, gNumberOfTracks, gSectorsPerTrack, gOffsetCylinder, gSectorsPerBlock, gNumberOfClusters, gSectorsPerCylinder;
 BLOCK0 *b0;
 
 /* -------------------------- 'local' globals --------------------------- */
@@ -199,14 +202,14 @@ short FindCluster(uint16_t fnum, uint16_t blkno) {
     uint16_t file, blk;
     short i;
 
-    for (i = 0; i < gclusters; i++) {
+    for (i = 0; i < gNumberOfClusters; i++) {
         file = fat_file(i);
         blk = fat_cl(i);
         if (file == fnum && blk == blkno) {
             break;
         }
     }
-    return (i == gclusters) ? -1 : i;
+    return (i == gNumberOfClusters) ? -1 : i;
 }
 
 void cat_file(long fnum, QLDIR * entry) {
@@ -232,14 +235,14 @@ void cat_file(long fnum, QLDIR * entry) {
             fputs("warning: file appears to be deleted\n", stderr);
         }
         else {
-            char *buffer = xmalloc (GSSIZE * allocblock);
-            long lblk = flen / (GSSIZE * allocblock);
+            char *buffer = xmalloc (GSSIZE * gSectorsPerBlock);
+            long lblk = flen / (GSSIZE * gSectorsPerBlock);
             long xblk = 0,xbyt = 0;
             short needx = 1;
 
             if(qldata) {
-                xblk = (flen - 8) / (GSSIZE * allocblock);
-                xbyt = (flen - 8) % (GSSIZE * allocblock);
+                xblk = (flen - 8) / (GSSIZE * gSectorsPerBlock);
+                xbyt = (flen - 8) % (GSSIZE * gSectorsPerBlock);
             }
 
             for (s = 0; s <= lblk; s++) {
@@ -249,9 +252,9 @@ void cat_file(long fnum, QLDIR * entry) {
                         start = 64;
                     else
                         start = 0;
-                    end = GSSIZE * allocblock;
+                    end = GSSIZE * gSectorsPerBlock;
                     if (s == lblk)
-                        end = flen % (GSSIZE * allocblock);
+                        end = flen % (GSSIZE * gSectorsPerBlock);
                     err = write (1, buffer + start, end - start);
                     if (err < 0)
                         perror ("output file: write(): ");
@@ -262,10 +265,10 @@ void cat_file(long fnum, QLDIR * entry) {
                 else {
                     fprintf(stderr, "** Cluster #%d of %.*s not found **\n",
                              s, entry->d_szname, entry->d_name);
-                    err = lseek(1, GSSIZE * allocblock, SEEK_CUR);
+                    err = lseek(1, GSSIZE * gSectorsPerBlock, SEEK_CUR);
                     /* leave hole */
                     if (err < 0)	/* non seekable */
-                        for (ii = 0; ii < allocblock * GSSIZE; ii++)
+                        for (ii = 0; ii < gSectorsPerBlock * GSSIZE; ii++)
                             fputc ('#', stdout);
                 }
             }
@@ -293,11 +296,11 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
     int rval = 0;
     long flen = sdl->flen;
     short fnum = sdl->fileno;
-    uint8_t *buffer = xmalloc (GSSIZE * allocblock);
+    uint8_t *buffer = xmalloc (GSSIZE * gSectorsPerBlock);
 
     if (off) {
-        s = (*off) / (GSSIZE * allocblock);
-        j = (*off) % (GSSIZE * allocblock);
+        s = (*off) / (GSSIZE * gSectorsPerBlock);
+        j = (*off) % (GSSIZE * gSectorsPerBlock);
         if ((i = FindCluster(fnum, s)) != -1) {
             if (flen != 128 && j != 64) {
                 read_cluster(buffer, i);
@@ -307,7 +310,7 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
         }
     }
     else {
-        for (s = 0; !rval && s <= flen / (GSSIZE * allocblock); s++) {
+        for (s = 0; !rval && s <= flen / (GSSIZE * gSectorsPerBlock); s++) {
             i = FindCluster (fnum, s);
             if (i != -1) {
                 read_cluster(buffer, i);
@@ -315,12 +318,12 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
                     start = 64;
                 else
                     start = 0;
-                end = GSSIZE * allocblock;
+                end = GSSIZE * gSectorsPerBlock;
 
-                if (s == (flen / (GSSIZE * allocblock)))
-                    end = (flen % (GSSIZE * allocblock));
+                if (s == (flen / (GSSIZE * gSectorsPerBlock)))
+                    end = (flen % (GSSIZE * gSectorsPerBlock));
                 else
-                    end = GSSIZE * allocblock;
+                    end = GSSIZE * gSectorsPerBlock;
                 for (j = start; j <= end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
 
@@ -412,7 +415,7 @@ void del_file(long fnum, QLDIR * entry, SDL * sdl) {
         exit (EBADF);
     }
 
-    for (i = 1; i < gclusters; i++) {
+    for (i = 1; i < gNumberOfClusters; i++) {
         file = fat_file(i);
         if (file == fnum) {
             if (fat_cl(i) == 0)
@@ -422,14 +425,14 @@ void del_file(long fnum, QLDIR * entry, SDL * sdl) {
         }
     }
 
-    b0->q5a_free_sectors = swapword(freed * allocblock + swapword (b0->q5a_free_sectors));
+    b0->q5a_free_sectors = swapword(freed * gSectorsPerBlock + swapword (b0->q5a_free_sectors));
 
     entry->d_szname = 0;
     entry->d_length = 0;
     entry->d_type = 0;
 
     if (blk0 > 0) {
-        uint8_t *b = xmalloc (GSSIZE * allocblock);
+        uint8_t *b = xmalloc (GSSIZE * gSectorsPerBlock);
 
         read_cluster(b, blk0);
         memcpy(b, entry, 64);
@@ -451,7 +454,7 @@ void usage(char *error) {
         "Usage: qltools dev -[options] [filename]\n",
         "options:\n",
         "    -d         list directory          -s         list short directory",
-        "    -i         list info               -m         list disk map",
+        "    -i         list disk info          -m         list disk map",
         "    -c         list conversion table   -l         list files on write",
         "    -w <files> write files (query)     -W <files> (over)write files",
         "    -r <name>  remove file <name>      -n <flle>  copy <file> to stdout",
@@ -480,11 +483,12 @@ void print_info(void) {
 
     printf("Disk ID               : %.4s\n", b0->q5a_id);
     printf("Disk Label            : %.10s\n", b0->q5a_medium_name);
-    printf("Sectors per track     : %i\n", gsectors);
-    printf("Sectors per cylinder  : %i\n", gspcyl);
-    printf("Number of cylinder    : %i\n", gtracks);
-    printf("Allocation block      : %i\n", allocblock);
-    printf("Sector offset/cylinder: %i\n", goffset);
+    printf("Number of sides       : %i\n", gNumberOfSides);
+    printf("Sectors per track     : %i\n", gSectorsPerTrack);
+    printf("Sectors per cylinder  : %i\n", gSectorsPerCylinder);
+    printf("Number of cylinders   : %i\n", gNumberOfTracks);
+    printf("Sectors per block     : %i\n", gSectorsPerBlock);
+    printf("Sector offset/cylinder: %i\n", gOffsetCylinder);
     printf("Random                : %04x\n", swapword (b0->q5a_random));
     printf("Updates               : %" PRIu32 "\n", swaplong (b0->q5a_update_count));
     printf("Free sectors          : %i\n", swapword (b0->q5a_free_sectors));
@@ -494,13 +498,13 @@ void print_info(void) {
     printf("Directory is          : %u sectors and %u bytes\n", bleod, byeod);
 
     printf("\nLogical-to-physical sector mapping table:\n\n");
-    for (i = 0; i < gspcyl; i++)
+    for (i = 0; i < gSectorsPerCylinder; i++)
         printf("%x ", b0->q5a_log_to_phys[i]);
     putc('\n', stdout);
 
     if (ql5a) {
         printf("\nPhysical-to-logical sector mapping table:\n\n");
-        for (i = 0; i < gspcyl; i++)
+        for (i = 0; i < gSectorsPerCylinder; i++)
             printf("%x ", b0->q5a_phys_to_log[i]);
     }
     putc('\n', stdout);
@@ -512,9 +516,9 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
     int rval = 0;
 
     if (flen > 64) {
-        uint8_t *buffer = xmalloc(GSSIZE * allocblock);
+        uint8_t *buffer = xmalloc(GSSIZE * gSectorsPerBlock);
 
-        for (s = 0; s <= flen / (GSSIZE * allocblock); s++) {
+        for (s = 0; s <= flen / (GSSIZE * gSectorsPerBlock); s++) {
 
             i = FindCluster(fnum, s);
             if (i != -1) {
@@ -523,12 +527,12 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
                     start = 64;
                 else
                     start = 0;
-                end = GSSIZE * allocblock;
+                end = GSSIZE * gSectorsPerBlock;
 
-                if (s == (flen / (GSSIZE * allocblock)))
-                    end = (flen % (GSSIZE * allocblock));
+                if (s == (flen / (GSSIZE * gSectorsPerBlock)))
+                    end = (flen % (GSSIZE * gSectorsPerBlock));
                 else
-                    end = GSSIZE * allocblock;
+                    end = GSSIZE * gSectorsPerBlock;
                 for (j = start; j <= end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
                     int fno = FileXDir(ent->d_fileno);
@@ -644,14 +648,14 @@ void make_convtable(int verbose) {
         printf("logic\ttrack\tside\tsector\tunix_dev\n\n");
     }
 
-    sectors = gclusters * allocblock;
+    sectors = gNumberOfClusters * gSectorsPerBlock;
 
     if (verbose) {
         for (i = 0; i < sectors; i++) {
             tr = LTP_TRACK (i);
             si = LTP_SIDE (i);
             se = LTP_SCT (i);
-            uxs = tr * gspcyl + gsectors * si + se;
+            uxs = tr * gSectorsPerCylinder + gSectorsPerTrack * si + se;
             xx = LTP(i);
 
             if (verbose) {
@@ -666,12 +670,12 @@ void dump_cluster(int num, short flag) {
     unsigned char buf[GSSIZE];
     ssize_t ignore __attribute__((unused));
 
-    for (i = 0; i < allocblock; i++) {
+    for (i = 0; i < gSectorsPerBlock; i++) {
         short j, k;
         unsigned char *p;
         long fpos=0;
 
-        sect = num * allocblock + i;
+        sect = num * gSectorsPerBlock + i;
         err = ReadQLSector(fd, buf, sect);
 
         if (err < 0)
@@ -703,8 +707,8 @@ int read_cluster(void *p, int num) {
     int i, sect;
     int r = 0;
 
-    for (i = 0; i < allocblock; i++) {
-        sect = num * allocblock + i;
+    for (i = 0; i < gSectorsPerBlock; i++) {
+        sect = num * gSectorsPerBlock + i;
         r = ReadQLSector(fd, (char *) p + i * GSSIZE, sect);
     }
     return r;
@@ -713,8 +717,8 @@ int read_cluster(void *p, int num) {
 void write_cluster(void *p, int num) {
     int i, sect;
 
-    for (i = 0; i < allocblock; i++) {
-        sect = num * allocblock + i;
+    for (i = 0; i < gSectorsPerBlock; i++) {
+        sect = num * gSectorsPerBlock + i;
         WriteQLSector(fd, (char *) p + i * GSSIZE, sect);
     }
 }
@@ -731,15 +735,15 @@ void read_b0fat(int argconv) {
 
     ql5a = b0->q5a_id[3] == 'A';
 
-    gtracks = swapword(b0->q5a_tracks);
-    gsectors = swapword(b0->q5a_sectors_track);
-    gspcyl = swapword(b0->q5a_sectors_cyl);
-    gsides = gspcyl / gsectors;
-    goffset = swapword(b0->q5a_sector_offset);
+    gNumberOfTracks = swapword(b0->q5a_tracks);
+    gSectorsPerTrack = swapword(b0->q5a_sectors_track);
+    gSectorsPerCylinder = swapword(b0->q5a_sectors_cyl);
+    gNumberOfSides = gSectorsPerCylinder / gSectorsPerTrack;
+    gOffsetCylinder = swapword(b0->q5a_sector_offset);
     bleod = swapword(b0->q5a_eod_block);
     byeod = swapword(b0->q5a_eod_byte);
-    allocblock = swapword(b0->q5a_allocation_blocks);
-    gclusters = gtracks * gspcyl / allocblock;
+    gSectorsPerBlock = swapword(b0->q5a_allocation_blocks);
+    gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
 
     make_convtable(argconv);
     read_fat();
@@ -752,7 +756,7 @@ void write_b0fat(void) {
     b0->q5a_update_count = swaplong(swaplong (b0->q5a_update_count) + 1);
 
     for (i = 0; fat_file(i) == 0xf80; i++) {
-        write_cluster((uint8_t *) b0 + i * allocblock * GSSIZE, i);
+        write_cluster((uint8_t *) b0 + i * gSectorsPerBlock * GSSIZE, i);
     }
 }
 
@@ -761,7 +765,7 @@ void read_fat(void) {
     int i;
 
     for (i = 0; fat_file(i) == 0xf80; i++)
-        read_cluster((uint8_t *) b0 + i * allocblock * GSSIZE, i);
+        read_cluster((uint8_t *) b0 + i * gSectorsPerBlock * GSSIZE, i);
 }
 
 short CheckFileName(QLDIR * ent, char *fname) {
@@ -899,10 +903,10 @@ int AllocNewSubDirCluster(long flen, uint16_t fileno) {
     short seqno;
     uint8_t *p;
 
-    seqno = flen / (GSSIZE * allocblock);
+    seqno = flen / (GSSIZE * gSectorsPerBlock);
 
     if ((i = alloc_new_cluster(fileno, seqno, 0)) != -1) {
-        p = xmalloc(GSSIZE * allocblock);
+        p = xmalloc(GSSIZE * gSectorsPerBlock);
         write_cluster(p, i);
         free(p);
     }
@@ -932,7 +936,7 @@ QLDIR *GetNewDirEntry(SDL * sdl, int *filenew, int *nblock, short *diroff) {
             hole = 1;
         }
 
-        if ((byeod == 0) && ((bleod % allocblock) == 0) && !hole) {
+        if ((byeod == 0) && ((bleod % gSectorsPerBlock) == 0) && !hole) {
             i = alloc_new_cluster(0, block_max, 0);
             if (i < 0) {
                 fprintf(stderr, "write file: no free cluster\n");
@@ -957,7 +961,7 @@ QLDIR *GetNewDirEntry(SDL * sdl, int *filenew, int *nblock, short *diroff) {
     else {
         static QLDIR newent;
 
-        if ((sdl->flen % GSSIZE * allocblock) == 0) {
+        if ((sdl->flen % GSSIZE * gSectorsPerBlock) == 0) {
             if (AllocNewSubDirCluster(sdl->flen, sdl->fileno)) {
                 *nblock = *nblock + 1;
                 *diroff = sdl->flen;
@@ -1029,7 +1033,7 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs) {
             UpdateSubEntry(entry, nsdl, 0);
         }
 
-        for (i = 0; i < gclusters; i++) {
+        for (i = 0; i < gNumberOfClusters; i++) {
             if(fat_file (i) == fileno) {
                 set_fat_file(i, fcl + 0x800);
             }
@@ -1042,12 +1046,12 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs) {
 
         /* Now write nent to new-ish directory */
 
-        buf = xmalloc(GSSIZE * allocblock);
+        buf = xmalloc(GSSIZE * gSectorsPerBlock);
         cwdlen = swaplong(fs->nde->d_length);
         dcl = fs->fnew;
-        if((cwdlen % GSSIZE * allocblock) == 0) {
+        if((cwdlen % GSSIZE * gSectorsPerBlock) == 0) {
             dcl = alloc_new_cluster(dcl,
-                                    cwdlen / (GSSIZE * allocblock), 0);
+                                    cwdlen / (GSSIZE * gSectorsPerBlock), 0);
             *(fs->nptr) = *(fs->nptr) + 1;
         }
         else if(cwdlen > 64) {
@@ -1096,7 +1100,7 @@ void writefile(char *fn, short dflag) {
     short nvers = -1;
     time_t t;
     struct stat s;
-    short blksiz = GSSIZE * allocblock;
+    short blksiz = GSSIZE * gSectorsPerBlock;
     ssize_t ignore __attribute__((unused));
 
     qlnam = MakeQLName(fn, &nlen);
@@ -1285,7 +1289,7 @@ void writefile(char *fn, short dflag) {
         entry->d_type = 255;
     }
 
-    b0->q5a_free_sectors = swapword(free_sect - nblock * allocblock);
+    b0->q5a_free_sectors = swapword(free_sect - nblock * gSectorsPerBlock);
 
     write_b0fat();
     dir_write_back(entry, sdl, &diroff);
@@ -1341,14 +1345,14 @@ void BuildSubList(void) {
 void read_dir(void) {
     int i, fn, cl;
 
-    for (i = 0; i < gclusters; i++) {
+    for (i = 0; i < gNumberOfClusters; i++) {
         cl = fat_cl (i);
         fn = fat_file (i);
 
         if (fn == 0) {
             block_dir[block_max] = i;
             block_max++;
-            read_cluster((char *) pdir + GSSIZE * allocblock * cl, i);
+            read_cluster((char *) pdir + GSSIZE * gSectorsPerBlock * cl, i);
         }
     }
     BuildSubList ();
@@ -1361,7 +1365,7 @@ void print_map(void) {
 
     printf ("\nblock\tfile\tpos\n\n");
 
-    for (i = 0; i < gclusters; i++) {
+    for (i = 0; i < gNumberOfClusters; i++) {
         cl = fat_cl (i);
         fn = fat_file (i);
 
@@ -1404,7 +1408,7 @@ void print_map(void) {
 
 void set_header(int ni, long h, QLDIR * entry, SDL * sdl) {
     int i;
-    uint8_t *b = xmalloc (allocblock * GSSIZE);
+    uint8_t *b = xmalloc (gSectorsPerBlock * GSSIZE);
 
     if (swaplong(entry->d_length) + swapword(entry->d_szname) == 0) {
         fprintf(stderr, "file deleted ??\n");
@@ -1430,20 +1434,20 @@ void dir_write_back(QLDIR * entry, SDL * sdl, short *off) {
         int i;
 
         for (i = 0; i < block_max; i++)
-            write_cluster(pdir + DIRSBLK * allocblock * i, block_dir[i]);
+            write_cluster(pdir + DIRSBLK * gSectorsPerBlock * i, block_dir[i]);
     }
 }
 
 int find_free_cluster(void) {
     short fflag, i;
 
-    for (i = lac + 1; i < gclusters; i++) {
+    for (i = lac + 1; i < gNumberOfClusters; i++) {
         fflag = fat_file(i);
         if ((fflag >> 4) == 0xFD) {
             break;
         }
     }
-    return (i < gclusters ? i : -1);
+    return (i < gNumberOfClusters ? i : -1);
 }
 
 int alloc_new_cluster(int fnum, int iblk, short flag) {
@@ -1516,28 +1520,28 @@ void format(char *frmt, char *argfname) {
         memcpy(b0->q5a_log_to_phys, ltp_dd, 18);
         memcpy(b0->q5a_phys_to_log, ptl_dd, 18);
 
-        gsides = 2;
+        gNumberOfSides = 2;
         b0->q5a_tracks = swapword(80);
-        gtracks = 80;
+        gNumberOfTracks = 80;
         b0->q5a_sectors_track = swapword(9);
-        gsectors = 9;
+        gSectorsPerTrack = 9;
         b0->q5a_sectors_cyl = swapword(18);
-        gspcyl = 18;
-        goffset = 5;
+        gSectorsPerCylinder = 18;
+        gOffsetCylinder = 5;
         b0->q5a_sector_offset = swapword(5);
         b0->q5a_eod_block = 0;
         b0->q5a_eod_byte = swapword(64);
         b0->q5a_free_sectors = swapword(1434);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1440);
         b0->q5a_allocation_blocks = swapword(3);
-        allocblock = 3;
+        gSectorsPerBlock = 3;
 
         set_fat_file(0, 0xF80);	/* FAT entry for FAT */
         set_fat_cl(0, 0);
         set_fat_file(1, 0);	/*  ...  for directory */
         set_fat_cl(1, 0);
-        gclusters = gtracks * gspcyl / allocblock;
-        for (cls = 2; cls < gclusters; cls++)
+        gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
+        for (cls = 2; cls < gNumberOfClusters; cls++)
         {   /* init rest of FAT */
             set_fat_file(cls, 0xFDF);
             set_fat_cl(cls, 0xFFF);
@@ -1551,21 +1555,21 @@ void format(char *frmt, char *argfname) {
                (strlen (argfname) <= 10 ? strlen (argfname) : 10));
         memcpy(b0->q5a_log_to_phys, ltp_hd, 36);
 
-        gsides = 2;
+        gNumberOfSides = 2;
         b0->q5a_tracks = swapword(80);
-        gtracks = 80;
+        gNumberOfTracks = 80;
         b0->q5a_sectors_track = swapword(18);
-        gsectors = 18;
+        gSectorsPerTrack = 18;
         b0->q5a_sectors_cyl = swapword(36);
-        gspcyl = 36;
-        goffset = 2;
+        gSectorsPerCylinder = 36;
+        gOffsetCylinder = 2;
         b0->q5a_sector_offset = swapword(2);
         b0->q5a_eod_block = 0;
         b0->q5a_eod_byte = swapword(64);
         b0->q5a_free_sectors = swapword(2871);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(2880);
         b0->q5a_allocation_blocks = swapword(3);
-        allocblock = 3;
+        gSectorsPerBlock = 3;
 
         set_fat_file(0, 0xF80);	/* FAT entry for FAT */
         set_fat_cl(0, 0);
@@ -1574,8 +1578,8 @@ void format(char *frmt, char *argfname) {
         set_fat_file(2, 0);	/*  ...  for directory */
         set_fat_cl(2, 0);
 
-        gclusters = gtracks * gspcyl / allocblock;
-        for (cls = 3; cls < gclusters; cls++)
+        gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
+        for (cls = 3; cls < gNumberOfClusters; cls++)
         {   /* init rest of FAT */
             set_fat_file(cls, 0xFDF);
             set_fat_cl(cls, 0xFFF);
@@ -1658,7 +1662,7 @@ int main(int argc, char **argv) {
         }
 
         read_b0fat (0);
-        pdir = xmalloc(GSSIZE * allocblock * (bleod + 6));
+        pdir = xmalloc(GSSIZE * gSectorsPerBlock * (bleod + 6));
         read_dir ();
 
         for (i = 2; i < argc; i++) {

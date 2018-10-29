@@ -8,7 +8,7 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.15, " __DATE__
+#define VERSION     "2.15.1, " __DATE__
 
 /* Maximum allocation block (normally 3) */
 #define MAXALB          6
@@ -87,23 +87,26 @@ typedef struct
 } FSBLK;
 
 
-extern int gsides, gtracks, gsectors, goffset, allocblock, gclusters, gspcyl;
+extern int gNumberOfSides, gNumberTracks, gSectorsPerTrack, gOffsetCylinder, gSectorsPerBlock, gNumberOfClusters, gSectorsPerCylinder;
 extern BLOCK0 *b0;
 
 /* ----------- logical to physical translation macros -------------------- */
 
-#define LTP_TRACK(_sect_)   ((_sect_)/gspcyl)
-#define LTP_SIDE(_sect_)    (b0->q5a_log_to_phys[(_sect_)%gspcyl] &0x80 ? 1 : 0)
+#define LTP_TRACK(_sect_)   ((_sect_)/gSectorsPerCylinder)
+
+#define LTP_SIDE(_sect_)    (b0->q5a_log_to_phys[(_sect_)%gSectorsPerCylinder] &0x80 ? 1 : 0)
+
 #define LTP_SCT(_sect_) \
-       (((0x7f& b0->q5a_log_to_phys[(_sect_)%gspcyl])+ \
-       goffset*LTP_TRACK(_sect_)) % gsectors)
+       (((0x7f& b0->q5a_log_to_phys[(_sect_)%gSectorsPerCylinder])+ \
+       gOffsetCylinder*LTP_TRACK(_sect_)) % gSectorsPerTrack)
+
 #define LTP_SECT(_sect_)    (LTP_SCT(_sect_)+1)
 
-#define LTP(_sect_)   ((long) 512L*(long)(LTP_TRACK(_sect_)*gspcyl+ \
-                       LTP_SIDE(_sect_)*gsectors+LTP_SCT(_sect_)))
+#define LTP(_sect_)   ((long) 512L*(long)(LTP_TRACK(_sect_)*gSectorsPerCylinder+ \
+                       LTP_SIDE(_sect_)*gSectorsPerTrack+LTP_SCT(_sect_)))
 
 #ifndef min
-# define min(a,b) (a<b ? a : b)
+# define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
 HANDLE OpenQLDevice (char *device, int mode);
