@@ -232,7 +232,7 @@ void cat_file(long fnum, QLDIR * entry) {
             fputs("warning: file appears to be deleted\n", stderr);
         }
         else {
-            char *buffer = xmalloc (512 * allocblock);
+            char *buffer = xmalloc (GSSIZE * allocblock);
             long lblk = flen / (GSSIZE * allocblock);
             long xblk = 0,xbyt = 0;
             short needx = 1;
@@ -429,7 +429,7 @@ void del_file(long fnum, QLDIR * entry, SDL * sdl) {
     entry->d_type = 0;
 
     if (blk0 > 0) {
-        uint8_t *b = xmalloc (512 * allocblock);
+        uint8_t *b = xmalloc (GSSIZE * allocblock);
 
         read_cluster(b, blk0);
         memcpy(b, entry, 64);
@@ -663,7 +663,7 @@ void make_convtable(int verbose) {
 
 void dump_cluster(int num, short flag) {
     int i, sect;
-    unsigned char buf[512];
+    unsigned char buf[GSSIZE];
     ssize_t ignore __attribute__((unused));
 
     for (i = 0; i < allocblock; i++) {
@@ -694,7 +694,7 @@ void dump_cluster(int num, short flag) {
             }
         }
         else {
-            ignore = write(1, buf, 512);
+            ignore = write(1, buf, GSSIZE);
         }
     }
 }
@@ -1404,7 +1404,7 @@ void print_map(void) {
 
 void set_header(int ni, long h, QLDIR * entry, SDL * sdl) {
     int i;
-    uint8_t *b = xmalloc (allocblock * 512);
+    uint8_t *b = xmalloc (allocblock * GSSIZE);
 
     if (swaplong(entry->d_length) + swapword(entry->d_szname) == 0) {
         fprintf(stderr, "file deleted ??\n");
@@ -1685,10 +1685,10 @@ int main(int ac, char **av) {
                     dump_cluster(np1, c == 'U');
                     break;
                 case 'd':
-                    print_dir(0);
+                    print_dir(0);       // Print_dir with stats.
                     break;
                 case 's':
-                    print_dir(1);
+                    print_dir(1);       // Print dir with no stats.
                     break;
                 case 'i':
                     print_info();
