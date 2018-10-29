@@ -100,3 +100,22 @@ Changes from 1.5 to 1.6
        This is copyrighted software, but freely distributable.
 
 
+
+==================================================
+Insert a long, long, long period of time here.....
+..... many versions, no updates to this file.
+==================================================
+
+
+
+Changes from 2.15 to 2.15.1
+===========================
+
+1) Code reformatted to give proper structuring, indentation etc.
+2) Replaces all magic numbers (512) with GSSIZE.
+3) More meaningful names in the disk header block.
+4) Replace main parameters with argc and argv
+5) Much renaming of globals - better names now.
+
+    Norman Dunbar.
+    29th October 2018.
