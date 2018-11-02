@@ -8,12 +8,18 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.15.1, " __DATE__
+#define VERSION     "2.15.2, " __DATE__
 
-/* Maximum allocation block (normally 3) */
-#define MAXALB          6
+/*
+ * Maximum allocation block (normally 3 for DD/HD but 12 for ED)
+ * Used for the number of 512 byte sectors in the map.
+ * DD and HD use 3 * 512 byte sectors
+ * ED needs 3 * 2048 byte sectors, equates to 12 512 byte sectors.
+ */
+#define MAXALB          12
 
 /* Maximum number of sectors (norm. 1440) */
+/* This doesn't appear to be used anywhere. */
 #define MAXSECT         2880
 
 #if defined __GNUC__
@@ -24,6 +30,7 @@ typedef int HANDLE;
 
 #define GSSIZE 512
 #define DIRSBLK 8
+#define DIRENTRYSIZE 64
 
 typedef struct PACKED
 {
@@ -87,7 +94,9 @@ typedef struct
 } FSBLK;
 
 
-extern int gNumberOfSides, gNumberTracks, gSectorsPerTrack, gOffsetCylinder, gSectorsPerBlock, gNumberOfClusters, gSectorsPerCylinder;
+extern int gNumberOfSides, gNumberTracks, gSectorsPerTrack, gOffsetCylinder,
+           gSectorsPerBlock, gNumberOfClusters, gSectorsPerCylinder, gSectorSize,
+           gDirEntriesPerBlock;
 extern BLOCK0 *b0;
 
 /* ----------- logical to physical translation macros -------------------- */
@@ -102,8 +111,7 @@ extern BLOCK0 *b0;
 
 #define LTP_SECT(_sect_)    (LTP_SCT(_sect_)+1)
 
-/* ND. The sector size is hard coded here at 512. This will not work on ED discs. */
-#define LTP(_sect_)   ((long) 512L*(long)(LTP_TRACK(_sect_)*gSectorsPerCylinder+ \
+#define LTP(_sect_)   ((long) gSectorSize*(long)(LTP_TRACK(_sect_)*gSectorsPerCylinder+ \
                        LTP_SIDE(_sect_)*gSectorsPerTrack+LTP_SCT(_sect_)))
 
 #ifndef min

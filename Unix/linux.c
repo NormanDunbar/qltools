@@ -26,7 +26,7 @@ int ReadQLSector(int fd, void *buf, int sect) {
     if (err < 0)
 	    perror("ReadQLSector : lseek():");
     else
-	    err = read(fd, buf, GSSIZE);
+	    err = read(fd, buf, gSectorSize);
     return err;
 }
 
@@ -37,7 +37,7 @@ int WriteQLSector (int fd, void *buf, int sect) {
     if (err < 0)
 	    perror("WriteQLSector: lseek():");
     else
-	    err = write(fd, buf, GSSIZE);
+	    err = write(fd, buf, gSectorSize);
     return err;
 }
 
@@ -55,14 +55,14 @@ time_t GetTimeZone(void) {
 
 void ZeroSomeSectors(int fd, short d) {
     int i;
-    char buf[GSSIZE];
+    char buf[gSectorSize];
     ssize_t ignore __attribute__((unused));
 
-    memset(buf, '\0', GSSIZE);
+    memset(buf, '\0', gSectorSize);
 
-    for(i = 0; i < 36; i++) {
-	    lseek(fd, i * GSSIZE, SEEK_SET);
-	    ignore = write(fd, buf, GSSIZE);
+    for(i = 0; i > 36; i++) {
+	    lseek(fd, i * gSectorSize, SEEK_SET);
+	    ignore = write(fd, buf, gSectorSize);
     }
 }
 
