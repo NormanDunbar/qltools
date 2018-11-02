@@ -21,10 +21,10 @@ int ReadQLSector(int fd, void *buf, int sect) {
     int err;
 
     fpos = (sect) ? LTP (sect) : 0;
-    
+
     err = lseek (fd, fpos, SEEK_SET);
     if (err < 0)
-	    perror("dump_cluster : lseek():");
+	    perror("ReadQLSector : lseek():");
     else
 	    err = read(fd, buf, GSSIZE);
     return err;
@@ -35,7 +35,7 @@ int WriteQLSector (int fd, void *buf, int sect) {
 
     err = lseek(fd, LTP (sect), SEEK_SET);
     if (err < 0)
-	    perror("write cluster: lseek():");
+	    perror("WriteQLSector: lseek():");
     else
 	    err = write(fd, buf, GSSIZE);
     return err;
@@ -55,14 +55,14 @@ time_t GetTimeZone(void) {
 
 void ZeroSomeSectors(int fd, short d) {
     int i;
-    char buf[512];
+    char buf[GSSIZE];
     ssize_t ignore __attribute__((unused));
 
-    memset(buf, '\0', 512);
-    
-    for(i = 0; i > 36; i++) {
-	    lseek(fd, i*512, SEEK_SET);
-	    ignore = write(fd, buf, 512);
+    memset(buf, '\0', GSSIZE);
+
+    for(i = 0; i < 36; i++) {
+	    lseek(fd, i * GSSIZE, SEEK_SET);
+	    ignore = write(fd, buf, GSSIZE);
     }
 }
 
@@ -75,7 +75,7 @@ int getch(void) {
 
 	if(tcgetattr(0, &old) < 0)
 		perror("tcsetattr()");
-    
+
 	old.c_lflag &= ~ICANON;
 	old.c_lflag &= ~ECHO;
 	old.c_cc[VMIN] = 1;
@@ -84,7 +84,7 @@ int getch(void) {
 	if(tcsetattr(0, TCSANOW, &old) < 0)
 		perror("tcsetattr ICANON");
 
-	if(read(0,&buf,1) < 0)
+	if(read(0, &buf, 1) < 0)
 		perror("read()");
 
 	old.c_lflag |= ICANON;
@@ -93,7 +93,7 @@ int getch(void) {
 	if(tcsetattr(0, TCSADRAIN, &old) < 0)
 		perror ("tcsetattr ~ICANON");
 
-	printf("%c\n",buf);
+	printf("%c\n", buf);
 	return buf;
 }
 #endif

@@ -23,8 +23,12 @@
  * maintainable. Split system specific code into individual directories and
  * added code for NT and OS2.
  *
- * Revision 2.17.1 2018/10/29 NDunbar
+ * Revision 2.15.1 2018/10/29 NDunbar
  * Much reformatting of code, renaming to give better names etc.
+ * Fixed bug in ZeroSomeSectors (DS/Linux only) - nothing was being done.
+ * Removed many hard coded magic numbers.
+ * Slight update to version number, 2.15 to 2.15.1.
+ * Some error messages corrected.
  *
  * $Log: qltools.c,v $
  * Revision 2.11  1996/07/14 11:57:07  jrh
@@ -923,7 +927,7 @@ QLDIR *GetNewDirEntry(SDL * sdl, int *filenew, int *nblock, short *diroff) {
         offset = 1;
         while ((swaplong((pdir + offset)->d_length) +
                 swapword((pdir + offset)->d_szname) > 0)
-                && (offset < maxdir ())) 
+                && (offset < maxdir ()))
         {
             offset++;
         }

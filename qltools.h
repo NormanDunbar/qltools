@@ -102,6 +102,7 @@ extern BLOCK0 *b0;
 
 #define LTP_SECT(_sect_)    (LTP_SCT(_sect_)+1)
 
+/* ND. The sector size is hard coded here at 512. This will not work on ED discs. */
 #define LTP(_sect_)   ((long) 512L*(long)(LTP_TRACK(_sect_)*gSectorsPerCylinder+ \
                        LTP_SIDE(_sect_)*gSectorsPerTrack+LTP_SCT(_sect_)))
 
@@ -124,7 +125,7 @@ int getch(void);
 #else
 extern void usage(char *);
 #define strcasecompare stricmp
-#define strncasecompare strnicmp 
+#define strncasecompare strnicmp
 #endif
 
 
