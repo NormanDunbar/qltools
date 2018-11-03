@@ -24,6 +24,11 @@
  * added code for NT and OS2.
  *
  *
+ * Revision 2.15.3 2018/11/03 NDunbar
+ * More tidying up of the usage messages. Proper letter case etc.
+ * Extracted common code from the three format routines to reduce duplication.
+ * Version bumped to 2.15.3.
+ *
  * Revision 2.15.2 2018/11/02 NDunbar
  * More variables renamed.
  * Added -t option to usage.
@@ -468,17 +473,17 @@ void del_file(long fnum, QLDIR * entry, SDL * sdl) {
 void usage(char *error) {
     static char *options[] = {
         "\nUsage: qltools device -[options] [filename]\n",
-        "options:\n",
-        "    -d         list directory          -s         list short directory",
-        "    -i         list disk info          -m         list disk map",
-        "    -c         list conversion table   -l         list files on write\n",
-        "    -w <files> write files (query)     -W <files> (over)write files",
-        "    -r <name>  remove file <name>      -n <flle>  copy <file> to stdout\n",
-        "    -uN        ASCII dump cluster N    -UN        binary dump",
+        "Options:\n",
+        "    -d         List directory          -s         List short directory",
+        "    -i         List disk info          -m         List disk map",
+        "    -c         List conversion table   -l         List files on write\n",
+        "    -w <files> Write files (query)     -W <files> (Over)write files",
+        "    -r <name>  Remove file <name>      -n <flle>  Copy <file> to stdout\n",
+        "    -uN        ASCII dump cluster N    -UN        Binary dump",
         "    -M <name>  Make level 2 directory <name>",
-        "    -x <name> <size> make <name> executable with dataspace <size>",
-        "    -t         do not translate '.' to '_' in filenames\n",
-        "    -fxx <name> format as xx=hd|dd|ed disk with label <name>\n",
+        "    -x <name> <size> Make <name> executable with dataspace <size>",
+        "    -t         Do not translate '.' to '_' in filenames\n",
+        "    -fxx <name> Format as xx=hd|dd|ed disk with label <name>\n",
         "QLTOOLS for " OSNAME " (version " VERSION ")\n",
         "'Device' is either a file with the image of a QL format disk",
         "or a floppy drive with a SMS/QDOS disk inserted in it (e.g. " FDNAME ")\n",
@@ -487,7 +492,7 @@ void usage(char *error) {
     };
     char **h;
 
-    fprintf(stderr, "error : %s\n", error);
+    fprintf(stderr, "\nError : %s\n", error);
     for (h = options; *h; h++) {
         fputs(*h, stderr);
         fputc('\n', stderr);
@@ -1531,6 +1536,15 @@ void format(char *frmt, char *argfname) {
 
     int cls;
     time_t t;
+    char formatRequested = *frmt;
+    int startCluster = 0;
+
+    /* We must be sure we have a valid format! */
+    if ((formatRequested != 'h') &&
+        (formatRequested != 'e') &&
+        (formatRequested != 'd')) {
+        usage("Invalid format requested");
+    }
 
     /* Good for DD and HD floppies. */
     gSectorSize = 512;
@@ -1543,112 +1557,82 @@ void format(char *frmt, char *argfname) {
 
     ZeroSomeSectors(fd, *frmt);
 
+    /* Common Stuff goes here regardless of which format */
+    /* Most of what follows assumes HD or ED in use. */
+    /* Which will be corrected if a DD is supplied. */
+    
+    ql5a = 0; 
+    gNumberOfSides = 2;
+    memcpy(b0, "QL5B          ", 14);
+    memcpy(b0->q5a_medium_name, argfname, 
+                (strlen(argfname) <= 10 ? strlen(argfname) : 10));
+    b0->q5a_tracks = swapword(80);
+    gNumberOfTracks = 80;
+    b0->q5a_eod_block = 0;
+    b0->q5a_eod_byte = swapword(64);
+
+    /* Common to DD and HD only */
+    b0->q5a_allocation_blocks = swapword(3);
+    gSectorsPerBlock = 3;
+
     if (*frmt == 'd')		/* 720 K format */ {
         ql5a = 1;
-        memcpy(b0, "QL5A          ", 14);
-        memcpy(b0->q5a_medium_name, argfname, (strlen(argfname) <= 10 ?
-                                         strlen(argfname) : 10));
+        memcpy(b0, "QL5A", 4);
         memcpy(b0->q5a_log_to_phys, ltp_dd, 18);
         memcpy(b0->q5a_phys_to_log, ptl_dd, 18);
 
-        gNumberOfSides = 2;
-        b0->q5a_tracks = swapword(80);
-        gNumberOfTracks = 80;
         b0->q5a_sectors_track = swapword(9);
         gSectorsPerTrack = 9;
         b0->q5a_sectors_cyl = swapword(18);
         gSectorsPerCylinder = 18;
         gOffsetCylinder = 5;
         b0->q5a_sector_offset = swapword(5);
-        b0->q5a_eod_block = 0;
-        b0->q5a_eod_byte = swapword(64);
         b0->q5a_free_sectors = swapword(1434);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1440);
-        b0->q5a_allocation_blocks = swapword(3);
-        gSectorsPerBlock = 3;
-        gDirEntriesPerBlock = gSectorSize / DIRENTRYSIZE;
 
-        set_fat_file(0, 0xF80);	/* FAT entry for FAT */
-        set_fat_cl(0, 0);
         set_fat_file(1, 0);	/*  ...  for directory */
         set_fat_cl(1, 0);
-        gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
-        for (cls = 2; cls < gNumberOfClusters; cls++)
-        {   /* init rest of FAT */
-            set_fat_file(cls, 0xFDF);
-            set_fat_cl(cls, 0xFFF);
-        }
+
+        startCluster = 2;
     }
     else if (*frmt == 'h') {
-        memcpy(b0, "QL5B          ", 14);
-        ql5a = 0;
 
-        memcpy(b0->q5a_medium_name, argfname,
-               (strlen (argfname) <= 10 ? strlen (argfname) : 10));
         memcpy(b0->q5a_log_to_phys, ltp_hd, 36);
 
-        gNumberOfSides = 2;
-        b0->q5a_tracks = swapword(80);
-        gNumberOfTracks = 80;
         b0->q5a_sectors_track = swapword(18);
         gSectorsPerTrack = 18;
         b0->q5a_sectors_cyl = swapword(36);
         gSectorsPerCylinder = 36;
         gOffsetCylinder = 2;
         b0->q5a_sector_offset = swapword(2);
-        b0->q5a_eod_block = 0;
-        b0->q5a_eod_byte = swapword(64);
         b0->q5a_free_sectors = swapword(2871);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(2880);
-        b0->q5a_allocation_blocks = swapword(3);
-        gSectorsPerBlock = 3;
-        gDirEntriesPerBlock = gSectorSize / DIRENTRYSIZE;
 
 
-        set_fat_file(0, 0xF80);	/* FAT entry for FAT */
-        set_fat_cl(0, 0);
         set_fat_file(1, 0xf80);
         set_fat_cl(1, 1);
         set_fat_file(2, 0);	/*  ...  for directory */
         set_fat_cl(2, 0);
 
-        gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
-        for (cls = 3; cls < gNumberOfClusters; cls++)
-        {   /* init rest of FAT */
-            set_fat_file(cls, 0xFDF);
-            set_fat_cl(cls, 0xFFF);
-        }
+        startCluster = 3;
     }
     else if (*frmt == 'e') {
-        memcpy(b0, "QL5B          ", 14);
-        ql5a = 0;
 
         /* ED floppy, bigger sector size. */
         gSectorSize = 2048;
 
-        memcpy(b0->q5a_medium_name, argfname,
-               (strlen (argfname) <= 10 ? strlen (argfname) : 10));
         memcpy(b0->q5a_log_to_phys, ltp_ed, 20);
 
-        gNumberOfSides = 2;
-        b0->q5a_tracks = swapword(80);
-        gNumberOfTracks = 80;
         b0->q5a_sectors_track = swapword(10);
         gSectorsPerTrack = 10;
         b0->q5a_sectors_cyl = swapword(20);
         gSectorsPerCylinder = 36;
         gOffsetCylinder = 2;
         b0->q5a_sector_offset = swapword(2);
-        b0->q5a_eod_block = 0;
-        b0->q5a_eod_byte = swapword(64);
         b0->q5a_free_sectors = swapword(1596);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1600);
         b0->q5a_allocation_blocks = swapword(1);
         gSectorsPerBlock = 1;
-        gDirEntriesPerBlock = gSectorSize / DIRENTRYSIZE;
-
-        set_fat_file(0, 0xf80);	/* FAT entry for FAT */
-        set_fat_cl(0, 0);
 
         set_fat_file(1, 0xf80);
         set_fat_cl(1, 1);
@@ -1659,13 +1643,24 @@ void format(char *frmt, char *argfname) {
         set_fat_file(3, 0);	/*  ...  for directory */
         set_fat_cl(3, 0);
 
-        gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
-        for (cls = 4; cls < gNumberOfClusters; cls++)
-        {   /* init rest of FAT */
-            set_fat_file(cls, 0xFDF);
-            set_fat_cl(cls, 0xFFF);
-        }
+        startCluster = 4;
     }
+
+    /* More common stuff needs done after the above */
+    /* Everything here is common to all formats */
+    gDirEntriesPerBlock = gSectorSize / DIRENTRYSIZE;
+    gNumberOfClusters = gNumberOfTracks * gSectorsPerCylinder / gSectorsPerBlock;
+
+    set_fat_file(0, 0xF80);	/* FAT entry for FAT */
+    set_fat_cl(0, 0);
+
+    for (cls = startCluster; cls < gNumberOfClusters; cls++)
+    {   /* init rest of FAT */
+        set_fat_file(cls, 0xFDF);
+        set_fat_cl(cls, 0xFFF);
+    }
+
+
     make_convtable (0);
     write_b0fat ();
 }
