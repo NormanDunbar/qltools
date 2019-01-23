@@ -34,7 +34,7 @@
  * Added -t option to usage.
  * Reformatted usage output better (in my opinion!)
  * Adjusted MAXALB to 12 from 6. This is the number of 512 byte sectors needed for a
- * floppy cluster for the map. DD/ED need 6 * 512 while ED needs 3 * 2048 (or 12 & 512).
+ * floppy cluster for the map. DD/HD need 6 * 512 while ED needs 3 * 2048 (or 12 * 512).
  * Added ED disks/image processing.
  *
  * Revision 2.15.1 2018/10/29 NDunbar
