@@ -1560,11 +1560,11 @@ void format(char *frmt, char *argfname) {
     /* Common Stuff goes here regardless of which format */
     /* Most of what follows assumes HD or ED in use. */
     /* Which will be corrected if a DD is supplied. */
-    
-    ql5a = 0; 
+
+    ql5a = 0;
     gNumberOfSides = 2;
     memcpy(b0, "QL5B          ", 14);
-    memcpy(b0->q5a_medium_name, argfname, 
+    memcpy(b0->q5a_medium_name, argfname,
                 (strlen(argfname) <= 10 ? strlen(argfname) : 10));
     b0->q5a_tracks = swapword(80);
     gNumberOfTracks = 80;
@@ -1687,6 +1687,7 @@ int main(int argc, char **argv) {
             switch (argv[i][1]) {
             case 'f':
                 dofmt = i;
+                mode = (O_RDWR | O_CREAT);
             case 'x':
             case 'r':
             case 'w':
@@ -1706,7 +1707,7 @@ int main(int argc, char **argv) {
 
     pd = argv[1];
 
-#if defined(__NT__) || defined(__MINGW32__)
+#if defined(__NT__) || defined(__MINGW32__) || defined(__WIN32__)
     if(*(pd+1) ==  ':' && isalpha(*pd)) {
         strcpy(dev, "\\\\.\\a:");
         *(dev+4) = *pd;
@@ -1721,9 +1722,11 @@ int main(int argc, char **argv) {
     }
 #endif
 
+                printf("FORMAT: %s in mode %d\n", argv[dofmt] + 2, mode);
     fd = OpenQLDevice(pd, mode);
 
     if ((int) fd < 0) {
+            printf("OOPS! %d\n", (int) fd);
         perror("could not open image");
         usage("image file not opened");
     }

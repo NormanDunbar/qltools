@@ -1,5 +1,12 @@
-#include <sys/time.h>
-#include <unistd.h>
+#ifdef __BORLANDC__
+    // Borland C/Embarcadero C compiler.
+    #include "unistd_win.h"
+#else
+    // Gcc on any platform.
+    #include <sys/time.h>
+    #include <unistd.h>
+#endif
+
 #include <stdint.h>
 
 #define OSNAME "Linux/win32"

@@ -1,0 +1,38 @@
+# depslib dependency file v1.0
+1548425267 source:c:\users\hisg494\codeblocks\sourcecode\qltools\qltools.c
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<string.h>
+	<ctype.h>
+	<sys/stat.h>
+	<errno.h>
+	<time.h>
+	<inttypes.h>
+	"qltools.h"
+
+1548429753 c:\users\hisg494\codeblocks\sourcecode\qltools\qltools.h
+	"unistd_win.h"
+	<sys/time.h>
+	<unistd.h>
+	<stdint.h>
+
+1548425495 source:c:\users\hisg494\codeblocks\sourcecode\qltools\win7\win7.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<fcntl.h>
+	<string.h>
+	<ctype.h>
+	<time.h>
+	<ctype.h>
+	<sys/time.h>
+	"qltools.h"
+	<termios.h>
+
+1548429753 c:\users\hisg494\codeblocks\sourcecode\qltools\\qltools.h
+	"unistd_win.h"
+	<sys/time.h>
+	<unistd.h>
+	<stdint.h>
+

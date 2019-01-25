@@ -11,3 +11,7 @@ Hxcfe/qltools-hxcfe
 *.dll
 *.zip
 
+*.obj 
+*.save 
+*.layout 
+*.depend 
