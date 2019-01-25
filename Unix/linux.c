@@ -60,7 +60,7 @@ void ZeroSomeSectors(int fd, short d) {
 
     memset(buf, '\0', gSectorSize);
 
-    for(i = 0; i > 36; i++) {
+    for(i = 0; i < 36; i++) {
 	    lseek(fd, i * gSectorSize, SEEK_SET);
 	    ignore = write(fd, buf, gSectorSize);
     }
