@@ -33,6 +33,9 @@ unix:
 
 hxcfe:
 	make EXE_EXT=$(EXE_EXT) -C Hxcfe
+    
+win7_gcc:    
+	make EXE_EXT=$(EXE_EXT) -C Win7_gcc
 
 clean:
 	-rm Unix/*.o
@@ -41,4 +44,6 @@ clean:
 	-rm Unix/qltools.exe
 	-rm Hxcfe/qltools-hxcfe
 	-rm Hxcfe/qltools-hxcfe.exe
+	-rm Win7_gcc/qltools-Win7_gcc
+	-rm Win7_gcc/qltools-Win7_gcc.exe
 
