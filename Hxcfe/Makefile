@@ -12,8 +12,8 @@ TARGET = qltools-hxcfe$(EXE_EXT)
 $(TARGET) : $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) -L$(HXCFELIBS) $(OBJS) -lhxcfe -lpthread
 
-linux.o : linux.c 
-	$(CC) -c $(CFLAGS) linux.c
+hxcfe.o : hxcfe.c 
+	$(CC) -c $(CFLAGS) hxcfe.c
 
 qltools.o : ../qltools.c
 	$(CC) -c $(CFLAGS) $<
