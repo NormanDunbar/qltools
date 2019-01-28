@@ -16,11 +16,13 @@ TARGET = qltools-w7$(EXE_EXT)
 $(TARGET) : $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-win7.obj : win7.c 
+win7.obj : win7.c $(HDR_UP)\qltools.h
 	$(CC) -c $(CFLAGS) win7.c
 
-qltools.obj : ..\qltools.c
+qltools.obj : $(HDR_UP)\qltools.c $(HDR_UP)\qltools.h
 	$(CC) -c $(CFLAGS) $<
 
-$(OBJS) : $(HDR_UP)\qltools.h
+# On Embarcadero, this gives a redefinition error
+# so I've moved the dependencies up to the target lines above.
+#$(OBJS) : $(HDR_UP)\qltools.h
 
