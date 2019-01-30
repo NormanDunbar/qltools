@@ -1777,7 +1777,11 @@ int main(int argc, char **argv) {
         for (i = 2; i < argc; i++) {
             char c = 0;
 
-            if (argv[i][0] == '-') {
+            if ((argv[i][0] == '-')
+#ifdef DOS_LIKE
+                || (argv[i][0] == '/')
+#endif
+              ){
                 OWopt = 0;
                 switch (c = argv[i][1]) {
                 case 'l':
