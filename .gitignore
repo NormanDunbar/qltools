@@ -15,3 +15,5 @@ Hxcfe/qltools-hxcfe
 *.save 
 *.layout 
 *.depend 
+bin/*
+*/bin/*
