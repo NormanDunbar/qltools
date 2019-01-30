@@ -24,7 +24,7 @@ int ReadQLSector(int fd, void *buf, int sect) {
 
     err = lseek (fd, fpos, SEEK_SET);
     if (err < 0)
-	    perror("ReadQLSector : lseek():");
+	    perror("ReadQLSector : lseek()");
     else
 	    err = read(fd, buf, gSectorSize);
     return err;
@@ -35,9 +35,11 @@ int WriteQLSector (int fd, void *buf, int sect) {
 
     err = lseek(fd, LTP (sect), SEEK_SET);
     if (err < 0)
-	    perror("WriteQLSector: lseek():");
+	    perror("WriteQLSector: lseek()");
     else
 	    err = write(fd, buf, gSectorSize);
+        if (err < 0)
+            perror("WriteQLSector: write()");
     return err;
 }
 
