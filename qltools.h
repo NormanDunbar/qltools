@@ -25,10 +25,6 @@ typedef int HANDLE;
  */
 #define MAXALB          12
 
-/* Maximum number of sectors (norm. 1440) */
-/* This doesn't appear to be used anywhere. */
-#define MAXSECT         2880
-
 #if defined __GNUC__
 #define PACKED  __attribute__((gcc_struct, packed))
 #else
@@ -36,7 +32,6 @@ typedef int HANDLE;
 #endif
 
 #define GSSIZE 512
-#define DIRSBLK 8
 #define DIRENTRYSIZE 64
 
 typedef struct PACKED
@@ -128,9 +123,9 @@ extern BLOCK0 *b0;
 HANDLE OpenQLDevice (char *device, int mode);
 int ReadQLSector (HANDLE fd, void *buf, int sector);
 int WriteQLSector (HANDLE fd, void *buf, int sector);
-void CloseQLDevice (HANDLE);
+void CloseQLDevice (HANDLE fd);
 time_t GetTimeZone (void);
-void ZeroSomeSectors(HANDLE fd, short);
+void ZeroSomeSectors(HANDLE fd, short count);
 
 #if defined (__linux__) || defined (VMS) || defined(__MINGW32__)
 int getch(void);

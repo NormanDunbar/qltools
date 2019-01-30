@@ -84,8 +84,17 @@
 
 static char rcsid[] = "$Id: qltools.c,v 2.11 1996/07/14 11:57:07 jrh Exp jrh $";
 
-#if defined (__OS2__) || defined (__NT__) || defined  (__MSDOS__) || defined(__GO32__)
-# define DOS_LIKE
+#if \
+  defined (__OS2__)     || \
+  defined (__NT__)      || \
+  defined  (__MSDOS__)  || \
+  defined(__GO32__)     || \
+  defined(__WINNT__)    || \
+  defined(__WIN32__)    || \
+  defined (__WIN64__)   || \
+  defined (__MINGW32__) || \
+  defined (__MINGW64__)
+    # define DOS_LIKE
 #endif
 
 #include <stdio.h>
@@ -278,7 +287,7 @@ void cat_file(long fnum, QLDIR * entry) {
                         end = flen % (gSectorSize * gSectorsPerBlock);
                     err = write (1, buffer + start, end - start);
                     if (err < 0)
-                        perror ("output file: write(): ");
+                        perror ("Output file: write(): ");
                     if(qldata && s == xblk) {
                         needx = memcmp(buffer+start+xbyt, "XTcc", 4);
                     }
@@ -701,7 +710,7 @@ void dump_cluster(int num, short flag) {
         err = ReadQLSector(fd, buf, sect);
 
         if (err < 0)
-            perror("dump_cluster: read(): ");
+            perror("Dump_cluster: read(): ");
         if (flag == 0) {
             p = buf;
             for (k = 0; k < 32; k++) {
@@ -1210,7 +1219,7 @@ void writefile(char *fn, short dflag) {
 
         err = lseek(fl, 0, SEEK_SET);	/* reposition to zero!!! */
         if (err < 0)
-            perror("write file: lseek() on input file : ");
+            perror("Write file: lseek() on input file : ");
     }
 
     free_sect = swapword(b0->q5a_free_sectors);
@@ -1297,7 +1306,7 @@ void writefile(char *fn, short dflag) {
 
             err = read(fl, datbuf, blksiz);
             if (err < 0)
-                perror("write file: read on input file:");
+                perror("Write file: read on input file:");
         }
         close (fl);
         free(datbuf);
@@ -1566,14 +1575,16 @@ void format(char *frmt, char *argfname) {
     memcpy(b0, "QL5B          ", 14);
     memcpy(b0->q5a_medium_name, argfname,
                 (strlen(argfname) <= 10 ? strlen(argfname) : 10));
-    b0->q5a_tracks = swapword(80);
+
     gNumberOfTracks = 80;
+    b0->q5a_tracks = swapword(gNumberOfTracks);
+
     b0->q5a_eod_block = 0;
     b0->q5a_eod_byte = swapword(64);
 
     /* Common to DD and HD only */
-    b0->q5a_allocation_blocks = swapword(3);
     gSectorsPerBlock = 3;
+    b0->q5a_allocation_blocks = swapword(gSectorsPerBlock);
 
     if (*frmt == 'd')		/* 720 K format */ {
         ql5a = 1;
@@ -1581,12 +1592,15 @@ void format(char *frmt, char *argfname) {
         memcpy(b0->q5a_log_to_phys, ltp_dd, 18);
         memcpy(b0->q5a_phys_to_log, ptl_dd, 18);
 
-        b0->q5a_sectors_track = swapword(9);
         gSectorsPerTrack = 9;
-        b0->q5a_sectors_cyl = swapword(18);
-        gSectorsPerCylinder = 18;
+        b0->q5a_sectors_track = swapword(gSectorsPerTrack);
+
+        gSectorsPerCylinder = gSectorsPerTrack * gNumberOfSides;
+        b0->q5a_sectors_cyl = swapword(gSectorsPerCylinder);
+
         gOffsetCylinder = 5;
-        b0->q5a_sector_offset = swapword(5);
+        b0->q5a_sector_offset = swapword(gOffsetCylinder);
+
         b0->q5a_free_sectors = swapword(1434);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1440);
 
@@ -1599,12 +1613,15 @@ void format(char *frmt, char *argfname) {
 
         memcpy(b0->q5a_log_to_phys, ltp_hd, 36);
 
-        b0->q5a_sectors_track = swapword(18);
         gSectorsPerTrack = 18;
-        b0->q5a_sectors_cyl = swapword(36);
-        gSectorsPerCylinder = 36;
+        b0->q5a_sectors_track = swapword(gSectorsPerTrack);
+
+        gSectorsPerCylinder = gSectorsPerTrack * gNumberOfSides;
+        b0->q5a_sectors_cyl = swapword(gSectorsPerCylinder);
+
         gOffsetCylinder = 2;
-        b0->q5a_sector_offset = swapword(2);
+        b0->q5a_sector_offset = swapword(gOffsetCylinder);
+
         b0->q5a_free_sectors = swapword(2871);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(2880);
 
@@ -1623,16 +1640,20 @@ void format(char *frmt, char *argfname) {
 
         memcpy(b0->q5a_log_to_phys, ltp_ed, 20);
 
-        b0->q5a_sectors_track = swapword(10);
         gSectorsPerTrack = 10;
-        b0->q5a_sectors_cyl = swapword(20);
-        gSectorsPerCylinder = 36;
+        b0->q5a_sectors_track = swapword(gSectorsPerTrack);
+
+        gSectorsPerCylinder = gSectorsPerTrack * gNumberOfSides;
+        b0->q5a_sectors_cyl = swapword(gSectorsPerCylinder);
+
         gOffsetCylinder = 2;
-        b0->q5a_sector_offset = swapword(2);
+        b0->q5a_sector_offset = swapword(gOffsetCylinder);
+
         b0->q5a_free_sectors = swapword(1596);
         b0->q5a_good_sectors = b0->q5a_total_sectors = swapword(1600);
-        b0->q5a_allocation_blocks = swapword(1);
+
         gSectorsPerBlock = 1;
+        b0->q5a_allocation_blocks = swapword(gSectorsPerBlock);
 
         set_fat_file(1, 0xf80);
         set_fat_cl(1, 1);
@@ -1687,12 +1708,11 @@ int main(int argc, char **argv) {
             switch (argv[i][1]) {
             case 'f':
                 dofmt = i;
-                mode = (O_RDWR | O_CREAT);
             case 'x':
             case 'r':
             case 'w':
             case 'W':
-            case 'M':
+            case 'm':
                 mode = O_RDWR;
                 i = argc;
                 break;
@@ -1700,7 +1720,11 @@ int main(int argc, char **argv) {
                 puts("QLTOOLS for "OSNAME" (version "VERSION")");
                 exit(0);
                 break;
+            }
 
+            // Did we request a format? Allow file creation if not there.
+            if (dofmt) {
+                mode |= O_CREAT;
             }
         }
     }
@@ -1722,12 +1746,10 @@ int main(int argc, char **argv) {
     }
 #endif
 
-                printf("FORMAT: %s in mode %d\n", argv[dofmt] + 2, mode);
     fd = OpenQLDevice(pd, mode);
 
     if ((int) fd < 0) {
-            printf("OOPS! %d\n", (int) fd);
-        perror("could not open image");
+        perror("Could not open image file");
         usage("image file not opened");
     }
 
@@ -1737,6 +1759,8 @@ int main(int argc, char **argv) {
         if (dofmt) {
             format (argv[dofmt] + 2, argv[dofmt + 1]);
             CloseQLDevice(fd);
+            /* Gcc creates without write permissions */
+            chmod(pd, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
             exit (0);
         }
 
