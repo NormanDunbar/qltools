@@ -1457,7 +1457,7 @@ void set_header(int ni, long h, QLDIR * entry, SDL * sdl) {
 
     read_cluster(b, i);
     entry->d_type = ((QLDIR *) b)->d_type = 1;
-    entry->d_datalen = ((QLDIR *) b)->d_datalen = swaplong(h);
+    entry->d_datalen = ((QLDIR *) b)->d_datalen = swaplong(((h+1) & 0xFFFE));
     write_cluster(b, i);
     free (b);
     dir_write_back(entry, sdl, NULL);
