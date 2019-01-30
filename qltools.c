@@ -713,7 +713,8 @@ void dump_cluster(int num, short flag) {
             perror("Dump_cluster: read(): ");
         if (flag == 0) {
             p = buf;
-            for (k = 0; k < 32; k++) {
+            // How many lines of 16 bytes do we print?
+            for (k = 0; k < (gSectorSize / 16); k++) {
                 printf("%03lx : ", k * 16 + fpos);
 
                 for (j = 0; j < 16; j++) {
