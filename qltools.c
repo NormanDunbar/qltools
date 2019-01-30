@@ -1714,6 +1714,7 @@ int main(int argc, char **argv) {
             case 'w':
             case 'W':
             case 'm':
+            case 'M':
                 mode = O_RDWR;
                 i = argc;
                 break;
