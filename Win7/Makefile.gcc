@@ -25,7 +25,8 @@ clean:
 	@del *.o
 	@del *.obj
 	@del *.tds   
-	@del qltools-w7
-	@del qltools-w7.exe
+    
+dist-clean: clean    
+	@del qltools-gcc.exe
 
 

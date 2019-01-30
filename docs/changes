@@ -145,3 +145,38 @@ Changes from 2.15.2 to 2.15.3
 
     Norman Dunbar.
     3rd November 2018.        
+    
+
+Changes from 2.15.3 to 2.15.4
+=============================
+
+1) Now compiles under Windows with Gcc. I used CodeBlocks with  the built in 
+   32bit gcc to do the builds.
+2) Fixed 32bit bug in formatting an ed image file. It would segfault on Windows 
+   64bit when compiled as 32bit, but not as a 64 bit build. Turned out to be a 
+   bug in my 'ed' formatting code.
+3) If the image file doesn't exist, it will now be created when formatting an image.
+4) Files were being corrupted when extracted from an image with the '-n' option. 
+   This was because the 'DOS_LIKE' define was not being done on modern C 
+   compilers/operating systems. It is now! The corruption was to add a CR in front 
+   of every LF in the file.
+5) When changing the dataspace of a file with '-x' the dataspace size was allowed to
+   be an odd size. I'm sure this causes trouble on a QL, so it now gets rounded up
+   if it is odd.
+6) The '-M' option to create a level 2 directory wasn't working. This was because it
+   was opening  the image file in read only mode. I may have been responsible for 
+   breaking this - but don;t quote me. It's fixed now.
+7) Dumping an ED cluster with the '-u' option (ASCII dump) was only dumping 32 lines
+   of 16 bytes - 512 bytes in total. The number of lines was hard coded. It has been
+   changed to calculate the number of lines from the sector size. This now works for 
+   ED drives as well.
+8) Windows uses the '/' character for command line options, unlike Linux which uses '-'
+   and while there was some code that allowed the '/' when 'DOS_LIKE' was defined, 
+   it wasn't in all the places it needed to be. Now it is. Windows users have the choice
+   of whichever flag symbol they like. (Well, '-' or '/' is all the choice actually!)
+9) Slightly weird. If the '-w' option was used to write a file into an image, and that
+   that file was already there, it didn't prompt to overwrite. I spent ages tracking it
+   down and it turned out that running in a Windows command session does prompt, only
+   running in a bash shell, on Windows, does it not prompt. As most users won't be in
+   my development bash shell, I'm not fixing this.
+

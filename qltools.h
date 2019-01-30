@@ -15,7 +15,7 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.15.3, " __DATE__
+#define VERSION     "2.15.4, " __DATE__
 
 /*
  * Maximum allocation block (normally 3 for DD/HD but 12 for ED)
