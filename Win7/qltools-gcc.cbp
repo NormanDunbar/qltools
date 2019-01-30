@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gnu_gcc_compiler3264bit_tdm-gcc-64" />
-				<Option parameters="C:\Users\hisg494\CodeBlocks\SourceCode\qltools\Win7\bin\Debug\test.ed -i" />
+				<Option parameters="C:\Users\hisg494\CodeBlocks\SourceCode\qltools\Win7\bin\Debug\ed -M TestDIR" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="../" />
@@ -24,6 +24,7 @@
 				<Option compiler="gnu_gcc_compiler3264bit_tdm-gcc-64" />
 				<Compiler>
 					<Add option="-O3" />
+					<Add directory="../" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -32,7 +33,11 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-m32" />
 		</Compiler>
+		<Linker>
+			<Add option="-m32" />
+		</Linker>
 		<Unit filename="../qltools.c">
 			<Option compilerVar="CC" />
 		</Unit>
