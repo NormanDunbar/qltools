@@ -100,3 +100,83 @@ Changes from 1.5 to 1.6
        This is copyrighted software, but freely distributable.
 
 
+
+==================================================
+Insert a long, long, long period of time here.....
+..... many versions, no updates to this file.
+==================================================
+
+
+
+Changes from 2.15 to 2.15.1
+===========================
+
+1) Code reformatted to give proper structuring, indentation etc.
+2) Replaces all magic numbers (512) with GSSIZE.
+3) More meaningful names in the disk header block.
+4) Replace main parameters with argc and argv
+5) Much renaming of globals - better names now.
+6) Fixed bug in ZeroSomeSectors() which was actually doing nothing.
+
+    Norman Dunbar.
+    29th October 2018.
+    
+    
+Changes from 2.15.1 to 2.15.2
+=============================
+
+1) More variables given meaningful names.
+2) Usage() output reformatted for easier reading.
+3) '-t' option added to usage() output.
+4) Adjusted MAXALB to 12 from 6. This is the number of 512 byte sectors needed for a
+   floppy cluster for the map. DD/ED need 6 * 512 while ED needs 3 * 2048 (or 12 & 512).
+5) Added ED disks/image processing.
+
+
+    Norman Dunbar.
+    2nd November 2018.    
+    
+    
+Changes from 2.15.2 to 2.15.3
+=============================
+
+1) More tidying up of the usage messages. Proper letter case etc.
+2) Extracted common code from the three format routines to reduce duplication.
+
+    Norman Dunbar.
+    3rd November 2018.        
+    
+
+Changes from 2.15.3 to 2.15.4
+=============================
+
+1) Now compiles under Windows with Gcc. I used CodeBlocks with  the built in 
+   32bit gcc to do the builds.
+2) Fixed 32bit bug in formatting an ed image file. It would segfault on Windows 
+   64bit when compiled as 32bit, but not as a 64 bit build. Turned out to be a 
+   bug in my 'ed' formatting code.
+3) If the image file doesn't exist, it will now be created when formatting an image.
+4) Files were being corrupted when extracted from an image with the '-n' option. 
+   This was because the 'DOS_LIKE' define was not being done on modern C 
+   compilers/operating systems. It is now! The corruption was to add a CR in front 
+   of every LF in the file.
+5) When changing the dataspace of a file with '-x' the dataspace size was allowed to
+   be an odd size. I'm sure this causes trouble on a QL, so it now gets rounded up
+   if it is odd.
+6) The '-M' option to create a level 2 directory wasn't working. This was because it
+   was opening  the image file in read only mode. I may have been responsible for 
+   breaking this - but don;t quote me. It's fixed now.
+7) Dumping an ED cluster with the '-u' option (ASCII dump) was only dumping 32 lines
+   of 16 bytes - 512 bytes in total. The number of lines was hard coded. It has been
+   changed to calculate the number of lines from the sector size. This now works for 
+   ED drives as well.
+8) Windows uses the '/' character for command line options, unlike Linux which uses '-'
+   and while there was some code that allowed the '/' when 'DOS_LIKE' was defined, 
+   it wasn't in all the places it needed to be. Now it is. Windows users have the choice
+   of whichever flag symbol they like. (Well, '-' or '/' is all the choice actually!)
+9) Slightly weird. If the '-w' option was used to write a file into an image, and that
+   that file was already there, it didn't prompt to overwrite. I spent ages tracking it
+   down and it turned out that running in a Windows command session does prompt, only
+   running in a bash shell, on Windows, does it not prompt. As most users won't be in
+   my development bash shell, I'm not fixing this.
+

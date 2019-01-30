@@ -3,6 +3,24 @@ that I do not have access to v1.7 - v2.02 documentation (if any
 exists). The fixes/enhancements noted below are changes from the v2.02
 code.
 
+Bug fixes/features in QLTOOLS 2.15.3
+====================================
+
+1. ED discs are now catered for from version 2.15.2 onwards.
+
+2. ZeroSomeSectors() was doing nothing, now fixed. It zeros out 36 
+   sectors on the floppy when formatting.
+   
+3. From 2.15.1 onwards, the code has had a bit of a refactoring. Indentation
+   has been fixed, variable names are now a bit more meaningful etc. The
+   disc info display has been improved, "magic" numbers removed. Sector size
+   is no longer assumed to be 512 (ED floppies are 2048), etc.
+   
+   (Norman Dunbar)
+
+   
+
+
 Bug fixes/features in QLTOOLS 2.2
 =================================
 
@@ -21,6 +39,7 @@ Bug fixes/features in QLTOOLS 2.2
 
 7. When Unix files are written, directory specs are removed and
    any dots are replaced with '_'. DOS files have '.' replacement.
+   This can be disabled using the -t option.
 
 8. I/O errors (e.g. write protected disk) trapped.
 

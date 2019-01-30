@@ -173,13 +173,14 @@ The following options are supported.
 -x <name> <size>	make <name> executable with dataspace=size
 -r <name>		remove file <name>
 -n <name>		copy file <name> to stdout
--fxx <name>		format as xx=hd|dd disk with label <name>
+-fxx <name>		format as xx=hd|dd|ed disk with label <name>
 -l			list names as written
 -uN			dumps cluster N (1536 bytes) to stdout in
 			ASCII format.
 -UN			dumps cluster N (1536 bytes) to stdout as
 			raw (binary) data.
 -M <dirname>		creates level 2 directory <dirname>
+-t          disables conversion of '.' to '_' in file names.
 
 
 The following descriptions assume a Linux implementation, substitute
@@ -298,30 +299,28 @@ Notes:
 Option -i
 ---------
 
-This lists information about the disk.
+This lists information about the disk. (In this case, a DS/HD floppy.)
 
 bash# qltools $fd -i
-Disk ID          : QL5A
-Disk Label       : qltools 24
-sectors per track: 9
-sectors per cyl. : 18
-number of cylind.: 80
-allocation block : 3
-sector offset/cyl: 5
-random           : 6ed6
-Updates          : 27
-free sectors     : 1086
-good sectors     : 1440
-total sectors    : 1440
-directory is     : 1 sectors and 256 bytes
+Disk ID               : QL5B
+Disk Label            : Test_ed   
+Number of sides       : 2
+Sectors per track     : 10
+Sectors per cylinder  : 20
+Number of cylinders   : 80
+Sectors per block     : 1
+Sector offset/cylinder: 2
+Random                : 743f
+Updates               : 64
+Free sectors          : 20
+Good sectors          : 1600
+Total sectors         : 1600
+Directory is          : 2 sectors and 0 bytes
 
-logical-to-physical sector mapping table:
+Logical-to-physical sector mapping table:
 
-0 3 6 80 83 86 1 4 7 81 84 87 2 5 8 82 85 88 
+0 2 4 6 8 80 82 84 86 88 1 3 5 7 9 81 83 85 87 89 
 
-physical-to-logical sector mapping table:
-
-0 6 c 1 7 d 2 8 e 3 9 f 4 a 10 5 b 11 
 
 
 'qltools' write a random number when it initialises a disk (-f), and
@@ -389,10 +388,10 @@ Option -c
 ---------
 
 The -c option lists the conversion table converting QDOS logical
-sector (clusters of 3x512 byte disk blocks) to physical address.  Note
-that the physical sector numbers (as per the SMS/QDOS manual) start at
-0, when doing direct sector addressing, sectors start at 1.  The
-unix_dev value can be used (*512) as input to lseek(2).
+sector (clusters of 3x512 byte disk blocks for DD/HD floppies or 1*2048 for 
+ED floppies) to physical address.  Note that the physical sector numbers 
+(as per the SMS/QDOS manual) start at 0, when doing direct sector addressing, 
+sectors start at 1.  
 
 bash# qltools $fd -c | more
 
@@ -558,35 +557,35 @@ sectors as the maximum the media supports, I recommend that you always
 verify foreign formats and only use known good disks.
 
 bash# fdformat $fd
-Double-sided, 80 tracks, 9 sec/track. Total capacity 720 kB.
+Double-sided, 80 tracks, 9 sec/track. Total capacity 1440 kB.
 Formatting ... done
 Verifying ... done
-bash# qltools $fd -fd 'SMS/QDOS !'
+
+bash# qltools $fd -fh 'SMS/QDOS !'
+
 bash# qltools $fd -i
-Disk ID          : QL5A
-Disk Label       : SMS/QDOS !
-sectors per track: 9
-sectors per cyl. : 18
-number of cylind.: 80
-allocation block : 3
-sector offset/cyl: 5
-random           : 15da
-Updates          : 1
-free sectors     : 1434
-good sectors     : 1440
-total sectors    : 1440
-directory is     : 0 sectors and 64 bytes
+Disk ID               : QL5B
+Disk Label            : SMS/QDOS   
+Number of sides       : 2
+Sectors per track     : 10
+Sectors per cylinder  : 20
+Number of cylinders   : 80
+Sectors per block     : 1
+Sector offset/cylinder: 2
+Random                : 743f
+Updates               : 64
+Free sectors          : 20
+Good sectors          : 1600
+Total sectors         : 1600
+Directory is          : 2 sectors and 0 bytes
 
-logical-to-physical sector mapping table:
+Logical-to-physical sector mapping table:
 
-0 3 6 80 83 86 1 4 7 81 84 87 2 5 8 82 85 88 
+0 2 4 6 8 80 82 84 86 88 1 3 5 7 9 81 83 85 87 89 
+ 
 
-physical-to-logical sector mapping table:
-
-0 6 c 1 7 d 2 8 e 3 9 f 4 a 10 5 b 11 
-
-The '-f' must be followed IMMEDIATELY by 'd' for DD disks or 'h' for
-HD disks, and the media name.
+The '-f' must be followed IMMEDIATELY by 'd' for DD disks,  'h' for
+HD disks or 'e' for ED disks, and the media name.
 
 Option -u, -U
 -------------

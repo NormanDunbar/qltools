@@ -20,19 +20,24 @@
 #    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 # 
 ################################################################
+EXE_EXT = 
+CC = gcc
 
 SYS := $(shell $(CC) -dumpmachine)
-ifneq (, $(findstring linux, $(SYS)))
-	EXE_EXT:=
-else ifneq (, $(findstring mingw, $(SYS)))
-	EXE_EXT:=.exe
-endif
+#ifneq (, $(findstring linux, $(SYS)))
+#	EXE_EXT =
+#else ifneq (, $(findstring mingw, $(SYS)))
+#	EXE_EXT = .exe
+#endif
 
 unix:	
-	make EXE_EXT=$(EXE_EXT) -C Unix
+	$(MAKE) EXE_EXT=$(EXE_EXT) -C Unix
 
 hxcfe:
-	make EXE_EXT=$(EXE_EXT) -C Hxcfe
+	$(MAKE) EXE_EXT=$(EXE_EXT) -C Hxcfe
+    
+win7:    
+	$(MAKE) EXE_EXT=$(EXE_EXT) -C Win7
 
 clean:
 	-rm Unix/*.o
