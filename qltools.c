@@ -1691,7 +1691,8 @@ int main(int argc, char **argv) {
     int i=0;
     QLDIR *entry;
     SDL *sdl;
-    int mode = O_RDONLY;
+    mode_t mode = O_RDONLY;
+    mode_t permissions = 0;
     int dofmt = 0;
     long np1 = 0, np2 = 0;
     char *pd,dev[64];
@@ -1727,6 +1728,7 @@ int main(int argc, char **argv) {
             // Did we request a format? Allow file creation if not there.
             if (dofmt) {
                 mode |= O_CREAT;
+                permissions = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
             }
         }
     }
@@ -1748,7 +1750,7 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    fd = OpenQLDevice(pd, mode);
+    fd = OpenQLDevice(pd, mode, permissions);
 
     if ((int) fd < 0) {
         perror("Could not open image file");

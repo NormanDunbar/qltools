@@ -15,7 +15,7 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.15.4, " __DATE__
+#define VERSION     "2.15.5, " __DATE__
 
 /*
  * Maximum allocation block (normally 3 for DD/HD but 12 for ED)
@@ -120,7 +120,7 @@ extern BLOCK0 *b0;
 # define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-HANDLE OpenQLDevice (char *device, int mode);
+HANDLE OpenQLDevice (char *device, mode_t mode, mode_t permissions);
 int ReadQLSector (HANDLE fd, void *buf, int sector);
 int WriteQLSector (HANDLE fd, void *buf, int sector);
 void CloseQLDevice (HANDLE fd);
