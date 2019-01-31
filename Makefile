@@ -24,11 +24,11 @@ EXE_EXT =
 CC = gcc
 
 SYS := $(shell $(CC) -dumpmachine)
-#ifneq (, $(findstring linux, $(SYS)))
-#	EXE_EXT =
-#else ifneq (, $(findstring mingw, $(SYS)))
-#	EXE_EXT = .exe
-#endif
+ifneq (, $(findstring linux, $(SYS)))
+	EXE_EXT =
+else ifneq (, $(findstring mingw, $(SYS)))
+	EXE_EXT = .exe
+endif
 
 unix:	
 	$(MAKE) EXE_EXT=$(EXE_EXT) -C Unix
