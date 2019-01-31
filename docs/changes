@@ -151,7 +151,8 @@ Changes from 2.15.3 to 2.15.4
 =============================
 
 1) Now compiles under Windows with Gcc. I used CodeBlocks with  the built in 
-   32bit gcc to do the builds.
+   32bit gcc to do the builds but the makefile works fine too, if you have gcc
+   installed on the path.
 2) Fixed 32bit bug in formatting an ed image file. It would segfault on Windows 
    64bit when compiled as 32bit, but not as a 64 bit build. Turned out to be a 
    bug in my 'ed' formatting code.
@@ -179,4 +180,16 @@ Changes from 2.15.3 to 2.15.4
    down and it turned out that running in a Windows command session does prompt, only
    running in a bash shell, on Windows, does it not prompt. As most users won't be in
    my development bash shell, I'm not fixing this.
+
+    Norman Dunbar.
+    30th January 2019.        
+    
+
+Changes from 2.15.4 to 2.15.5
+=============================
+
+1) Fixed bug when creating/formatting image files on Linux/Unix. It seems that on Windows
+   not having the third parameter to "open()" works fine, not on Linux. When creating files
+   the permissions parameter must be supplied. Sigh. My Bad.
+
 
