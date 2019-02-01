@@ -13,8 +13,8 @@
 
 #include "qltools.h"
 
-int OpenQLDevice(char *name, int mode) {
-    return open(name, mode);
+int OpenQLDevice(char *name, mode_t mode, mode_t permissions) {
+    return open(name, mode, permissions);
 }
 
 int ReadQLSector(int fd, void *buf, int sect) {
