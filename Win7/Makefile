@@ -19,7 +19,7 @@ HDR = ../
 CC = gcc
 
 OBJS = qltools.o win7.o
-CFLAGS = -O3 -I$(HDR) -Wall -s
+CFLAGS = -O3 -I$(HDR) -Wall -s -m32
 TARGET = qltools$(EXE_EXT)
 
 $(TARGET) : $(OBJS)
