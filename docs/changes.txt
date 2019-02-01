@@ -1,0 +1,197 @@
+Changes from 1.0 to 1.1
+=======================
+
+- There are a couple of bugs corrected: (tanks to Paul Foley)
+
+   1) When a file is deleted, QDOS only sets the top byte of the info
+      in the map to 0xFD.
+      1.0 assumes the entire 12 bit entry is set to 0xFDF, but the final F
+      will probably not be there unless that block has never been used.
+
+   2) 1.0 use read_block0() to read in the map block, but it assumes the
+      map block is 3 sectors long, in sectors 0, 3 and 6.  This is normally
+      the case, but it _can_ be changed (there is an 84-track formatting
+      program around that forces 4 sector allocation blocks).  All you can
+      guarantee is that the first sector will be sector 0.  What I would
+      suggest is to load in sector 0, get the info in the first 96 bytes and
+      then use the general read_block() routine to read the entire map.
+
+   3) #define for Maximum allocation block, since if allocation block was >3
+      this cause a "core dump".
+
+   4) Another #define for Maximum number of sectors (not ever 1440).
+
+   5) Use the "allocblock" variable for allocation blocksnumber (refer to 2)).
+
+   6) Check for unexistent sectors in a file.
+
+   7) Check if the disk is a QL disk (1.0 simply dump)
+
+I think there are some bugs with 3) and 4) and 5), but I cannot try the code
+(I have never seen any of these disks).
+
+Changes from 1.1 to 1.2
+=======================
+
+   1) A little bug: now argfnum is a long int (problems with Turbo C)
+
+   2) MS-DOS support !!!
+
+   3) A bug with lwrd, now return a unsigned long int and is a new function.
+
+   4) Eh eh eh a bug in the name of my city (Padova and NOT Pdaova :-)
+
+Changes from 1.2 to 1.3
+=======================
+
+   1) MS-DOS is a brain damnaged system. Stdout was opened with CR/LF
+      conversion and this cause damnages of binaries.
+
+   2) Corrected a bug in floppy reset under MS-DOS.
+
+Changes from 1.3 to 1.4
+=======================
+
+   1) "bleod" and "byeod" now are unsigned integers.
+
+   2) "wrd()" take a unsigned char pointer and return a unsigned int. There
+      are some problems with directories. Now in wrd() are some type
+      conversions.
+
+Changes from 1.4 to 1.5
+=======================
+
+   1) Apple Mac adaption by Roberto Avanzi <gandalf@sabrina.dei.unipd.it>
+
+   2) patches by Scott Telford <st@epcc.edinburgh.ac.uk>
+      - Improved error messages
+      - Qdos level 2 device subdirectories (file type 255) are now
+        recognised in the directory listing (indicated by a "->" like
+        the level 2 WSTAT.
+      - Unrecognised file types have their type number printed.
+      - Empty directory entries (length=0) are skipped in the directory
+        listing.
+
+Changes from 1.5 to 1.6
+=======================
+
+   1) Corrected a bug in the memory allocation of pdir. Now malloc
+      allocate the right size of memory (blocks of 512*allocblocks and not
+      of 512 bytes !)
+
+   2) A new switch -s for a short listing with only filenames. This is very
+      usefull for obtaining file names in scripts in a Unix environment.
+
+      example:
+                  # this program convert every file in a QL disk
+
+                  for i in `qltools $device -s`
+                  do
+                          qltools $device $i > $i
+                  done
+
+--
+       (c)1992 by Giuseppe Zanetti
+
+       Giuseppe Zanetti
+       via Vergani, 11 - 35031 Abano Terme (Padova) ITALY
+       e-mail: beppe@sabrina.dei.unipd.it
+
+       This is copyrighted software, but freely distributable.
+
+
+
+==================================================
+Insert a long, long, long period of time here.....
+..... many versions, no updates to this file.
+==================================================
+
+
+
+Changes from 2.15 to 2.15.1
+===========================
+
+1) Code reformatted to give proper structuring, indentation etc.
+2) Replaces all magic numbers (512) with GSSIZE.
+3) More meaningful names in the disk header block.
+4) Replace main parameters with argc and argv
+5) Much renaming of globals - better names now.
+6) Fixed bug in ZeroSomeSectors() which was actually doing nothing.
+
+    Norman Dunbar.
+    29th October 2018.
+    
+    
+Changes from 2.15.1 to 2.15.2
+=============================
+
+1) More variables given meaningful names.
+2) Usage() output reformatted for easier reading.
+3) '-t' option added to usage() output.
+4) Adjusted MAXALB to 12 from 6. This is the number of 512 byte sectors needed for a
+   floppy cluster for the map. DD/ED need 6 * 512 while ED needs 3 * 2048 (or 12 & 512).
+5) Added ED disks/image processing.
+
+
+    Norman Dunbar.
+    2nd November 2018.    
+    
+    
+Changes from 2.15.2 to 2.15.3
+=============================
+
+1) More tidying up of the usage messages. Proper letter case etc.
+2) Extracted common code from the three format routines to reduce duplication.
+
+    Norman Dunbar.
+    3rd November 2018.        
+    
+
+Changes from 2.15.3 to 2.15.4
+=============================
+
+1) Now compiles under Windows with Gcc. I used CodeBlocks with  the built in 
+   32bit gcc to do the builds but the makefile works fine too, if you have gcc
+   installed on the path.
+2) Fixed 32bit bug in formatting an ed image file. It would segfault on Windows 
+   64bit when compiled as 32bit, but not as a 64 bit build. Turned out to be a 
+   bug in my 'ed' formatting code.
+3) If the image file doesn't exist, it will now be created when formatting an image.
+4) Files were being corrupted when extracted from an image with the '-n' option. 
+   This was because the 'DOS_LIKE' define was not being done on modern C 
+   compilers/operating systems. It is now! The corruption was to add a CR in front 
+   of every LF in the file.
+5) When changing the dataspace of a file with '-x' the dataspace size was allowed to
+   be an odd size. I'm sure this causes trouble on a QL, so it now gets rounded up
+   if it is odd.
+6) The '-M' option to create a level 2 directory wasn't working. This was because it
+   was opening  the image file in read only mode. I may have been responsible for 
+   breaking this - but don;t quote me. It's fixed now.
+7) Dumping an ED cluster with the '-u' option (ASCII dump) was only dumping 32 lines
+   of 16 bytes - 512 bytes in total. The number of lines was hard coded. It has been
+   changed to calculate the number of lines from the sector size. This now works for 
+   ED drives as well.
+8) Windows uses the '/' character for command line options, unlike Linux which uses '-'
+   and while there was some code that allowed the '/' when 'DOS_LIKE' was defined, 
+   it wasn't in all the places it needed to be. Now it is. Windows users have the choice
+   of whichever flag symbol they like. (Well, '-' or '/' is all the choice actually!)
+9) Slightly weird. If the '-w' option was used to write a file into an image, and that
+   that file was already there, it didn't prompt to overwrite. I spent ages tracking it
+   down and it turned out that running in a Windows command session does prompt, only
+   running in a bash shell, on Windows, does it not prompt. As most users won't be in
+   my development bash shell, I'm not fixing this.
+
+    Norman Dunbar.
+    30th January 2019.        
+    
+
+Changes from 2.15.4 to 2.15.5
+=============================
+
+1) Fixed bug when creating/formatting image files on Linux/Unix. It seems that on Windows
+   not having the third parameter to "open()" works fine, not on Linux. When creating files
+   the permissions parameter must be supplied. Sigh. My Bad.
+2) Reorganised the documentation. All the previous, and slightly confusing, documentation 
+   has been moved into a directory named 'docs.old' while the latest documentation is now 
+   found, by itself, in a directory canned 'docs'.
+

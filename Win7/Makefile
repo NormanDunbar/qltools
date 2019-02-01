@@ -19,26 +19,22 @@ HDR = ../
 CC = gcc
 
 OBJS = qltools.o win7.o
-CFLAGS = -O3 -I$(HDR) -Wall -s -m32
+CFLAGS = -O3 -I$(HDR) -Wall -s
 TARGET = qltools$(EXE_EXT)
 
 $(TARGET) : $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-win7.o : win7.c 
+win7.o : win7.c $(HDR)/qltools.h
 	$(CC) -c $(CFLAGS) win7.c
 
-qltools.o : ../qltools.c
+qltools.o : ../qltools.c $(HDR)/qltools.h
 	$(CC) -c $(CFLAGS) $<
-
-$(OBJS) : $(HDR)/qltools.h
 
 clean:
 	@del *.o
 	@del *.obj
 	@del *.tds   
-    
-dist-clean: clean    
-	@del qltools-gcc.exe
+	@del qltools.exe
 
 
