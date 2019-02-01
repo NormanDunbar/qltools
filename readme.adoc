@@ -1,0 +1,19 @@
+== Qltools 2.15.x
+
+`Qltools` is a utility that allows you to access files stored on a QL Floppy Disc, or an image of a floppy, whether you are running on Linux (or other Unices) or Windows.
+
+`Qltools` was originally written by *Giuseppe Zanetti* and the following list of people have had a hand in it, somewhere or other:
+
+* Valenti Omar;
+* Richard Zidlicky;
+* Jonathan Hudson;
+* Graeme Gregory;
+* Norman Dunbar.
+
+`Qltools` can maintain floppy discs and/or images that are:
+
+* DS/DD 720 Kb
+* DS/HD 1,440 Kb
+* DS/ED 3.2 Mb
+
+Have fun.
