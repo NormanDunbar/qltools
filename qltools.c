@@ -1750,7 +1750,7 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    fd = OpenQLDevice(pd, mode,);
+    fd = OpenQLDevice(pd, mode, permissions);
 
     if ((int) fd < 0) {
         perror("Could not open image file");
