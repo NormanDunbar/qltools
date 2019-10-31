@@ -158,7 +158,7 @@ There's no confirmation that it has been successful, in the usual Unix manner of
 ==== File Name Conversion(((Options,File Name Conversion)))
 When writing files to the floppies, QL filenames have an underscore as the directory and file extension separator - `Win1_Source_qltools_c`, for example, while Other Operating Systems do not.
 
-By default, `qltools` will convert to and from the QL and Host naming convention but if you do not wish this to happen, then using the `-t` option suppresses name translation. See <<File Name Conversion>> for details.
+By default, `qltools` will convert to and from the QL and Host naming convention but if you do not wish this to happen, then using the `-t` option suppresses name translation. 
 
 For example:
 
