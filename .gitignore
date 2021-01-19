@@ -17,3 +17,4 @@ Hxcfe/qltools-hxcfe
 *.depend 
 bin/*
 */bin/*
+.vscode
