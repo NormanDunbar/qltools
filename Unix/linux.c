@@ -59,10 +59,32 @@ void ZeroSomeSectors(int fd, short d) {
     int i;
     char buf[gSectorSize];
     ssize_t ignore __attribute__((unused));
+    int writeSectorCount = 0;
 
     memset(buf, '\0', gSectorSize);
 
-    for(i = 0; i < 36; i++) {
+    /* Some weirdness from Richard??? "short d" is actually
+     * a 2 byte format indicator, dd, hd, ed which converts
+     * to:
+     * 
+     * dd = 100 = 1440 sectors
+     * ed = 101 = 1600 sectors
+     * hd = 104 = 2880 sectors
+     * 
+     * Because we don't yet have gNumberofTracks and
+     * gSectorsPerCylinder worked out, we can use the
+     * value in d to write out the whole image file.
+     */
+
+    switch (d) {
+        case 'd':   writeSectorCount = 1440; break;
+        case 'e':   writeSectorCount = 1600; break;
+        case 'h':   writeSectorCount = 2880; break;
+        default:    writeSectorCount = 36; break;
+    }
+
+
+    for(i = 0; i < writeSectorCount; i++) {
 	    lseek(fd, i * gSectorSize, SEEK_SET);
 	    ignore = write(fd, buf, gSectorSize);
     }

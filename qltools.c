@@ -24,6 +24,17 @@
  * added code for NT and OS2.
  *
  *
+ * Revision 2.15.6 2021/11/19 NDunbar
+ * Forced the image file to be as big as an actual floppy
+ * in ZeroSomeSectors. It was only writing 36 sectors up
+ * until this version. This was mentioned on the Ql Forum
+ * as a potential problem. Now resolved.
+ * 
+ * Maybe, this should be an option? Previously it only wrote
+ * as many sectors as it needed to write the data being loaded.
+ *
+ * Anyone know what happened to 2.15.4 and 2.15.5?
+ * 
  * Revision 2.15.3 2018/11/03 NDunbar
  * More tidying up of the usage messages. Proper letter case etc.
  * Extracted common code from the three format routines to reduce duplication.
@@ -1558,6 +1569,10 @@ void format(char *frmt, char *argfname) {
 
     /* Good for DD and HD floppies. */
     gSectorSize = 512;
+
+    /* Not for ED floppies though! */
+    if (formatRequested == 'e')
+        gSectorSize = 2048;
 
     t = time (NULL);
     b0->q5a_random = swapword(t & 0xffff);

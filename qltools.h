@@ -15,7 +15,7 @@
 typedef int HANDLE;
 
 #define TIME_DIFF    283996800
-#define VERSION     "2.15.5, " __DATE__
+#define VERSION     "2.15.6, " __DATE__
 
 /*
  * Maximum allocation block (normally 3 for DD/HD but 12 for ED)
@@ -96,7 +96,7 @@ typedef struct
 } FSBLK;
 
 
-extern int gNumberOfSides, gNumberTracks, gSectorsPerTrack, gOffsetCylinder,
+extern int gNumberOfSides, gNumberOfTracks, gSectorsPerTrack, gOffsetCylinder,
            gSectorsPerBlock, gNumberOfClusters, gSectorsPerCylinder, gSectorSize,
            gDirEntriesPerBlock;
 extern BLOCK0 *b0;
