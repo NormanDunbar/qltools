@@ -1,7 +1,7 @@
 HDR = ../
 
 OBJS = qltools.o linux.o
-CFLAGS = -O3 -I$(HDR) -Wall -s -m32
+CFLAGS = -O3 -I$(HDR) -Wall -s
 TARGET = qltools$(EXE_EXT)
 
 $(TARGET) : $(OBJS)
