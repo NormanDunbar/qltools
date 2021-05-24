@@ -127,7 +127,7 @@ void CloseQLDevice (HANDLE fd);
 time_t GetTimeZone (void);
 void ZeroSomeSectors(HANDLE fd, short count);
 
-#if defined (__linux__) || defined (VMS) || defined(__MINGW32__)
+#if defined (__linux__) || defined (VMS) || defined(__MINGW32__) || defined(__APPLE__)
 int getch(void);
 # ifndef O_BINARY
 # define O_BINARY 0
