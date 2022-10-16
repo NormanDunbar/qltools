@@ -24,6 +24,9 @@
  * added code for NT and OS2.
  *
  *
+ * Revision 2.15.7 2022/10/16 tae
+ * added -L option to allow changing disk label
+ * 
  * Revision 2.15.6 2021/11/19 NDunbar
  * Forced the image file to be as big as an actual floppy
  * in ZeroSomeSectors. It was only writing 36 sectors up
@@ -159,6 +162,7 @@ void read_dir(void);
 void print_map(void);
 int RecurseDir(int, long, void *, int (*func) (QLDIR *, int, void *));
 int find_free_cluster(void);
+void changeLabel(char *);
 
 void *xmalloc(long alot) {
     void *p = malloc(alot);
@@ -500,6 +504,7 @@ void usage(char *error) {
         "    -w <files> Write files (query)     -W <files> (Over)write files",
         "    -r <name>  Remove file <name>      -n <flle>  Copy <file> to stdout\n",
         "    -uN        ASCII dump cluster N    -UN        Binary dump",
+        "    -L <name>  Change disk label to <name>",
         "    -M <name>  Make level 2 directory <name>",
         "    -x <name> <size> Make <name> executable with dataspace <size>",
         "    -t         Do not translate '.' to '_' in filenames\n",
@@ -1702,6 +1707,13 @@ void format(char *frmt, char *argfname) {
     write_b0fat ();
 }
 
+void changeLabel(char *label) {
+  if (!label) usage("No label specified");
+  memcpy(b0->q5a_medium_name, "          ", 10);
+  memcpy(b0->q5a_medium_name, label, strlen(label)>10?10:strlen(label));
+  write_b0fat();
+}
+
 int main(int argc, char **argv) {
     int i=0;
     QLDIR *entry;
@@ -1731,6 +1743,7 @@ int main(int argc, char **argv) {
             case 'W':
             case 'm':
             case 'M':
+	    case 'L':
                 mode = O_RDWR;
                 i = argc;
                 break;
@@ -1875,6 +1888,9 @@ int main(int argc, char **argv) {
                         }
                     }
                     break;
+		case 'L':
+		  changeLabel(argv[++i]);
+		  break;
                 default:
                     usage ("bad option");
                     break;
