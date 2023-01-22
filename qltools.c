@@ -117,6 +117,7 @@ static char rcsid[] = "$Id: qltools.c,v 2.11 1996/07/14 11:57:07 jrh Exp jrh $";
 #include <errno.h>
 #include <time.h>
 #include <inttypes.h>
+#include <stdint.h>
 #include "qltools.h"
 
 /* -------------------------- globals ----------------------------------- */
@@ -1137,7 +1138,8 @@ void writefile(char *fn, short dflag) {
     int filenew, i, fl;
     QLDIR *entry;
     unsigned long free_sect;
-    long y, qdsize = 0;
+    long y;
+    uint32_t qdsize = 0;
     int enddat;
     int block = 0, nblock = 0;
     char *qlnam;
@@ -1221,10 +1223,10 @@ void writefile(char *fn, short dflag) {
             exit(errno);
         }
         y = s.st_size + 64; {
-            long stuff[2];
+            uint32_t stuff[2];
             lseek(fl, -8, SEEK_END);
             ignore = read (fl, stuff, 8);
-            if (*stuff == *(long *) "XTcc") {
+            if (*stuff == *(uint32_t *) "XTcc") {
                 qdsize = *(stuff + 1);
             }
         }
