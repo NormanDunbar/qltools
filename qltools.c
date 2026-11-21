@@ -344,9 +344,9 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
         s = (*off) / (gSectorSize * gSectorsPerBlock);
         j = (*off) % (gSectorSize * gSectorsPerBlock);
         if ((i = FindCluster(fnum, s)) != -1) {
-            if (flen != 128 && j != 64) {
-                read_cluster(buffer, i);
-            }
+            /* Always read the cluster first so that the other entries in it
+             * are preserved when the new entry is written back. */
+            read_cluster(buffer, i);
             memcpy((buffer + j), entry, 64);
             write_cluster (buffer, i);
         }
