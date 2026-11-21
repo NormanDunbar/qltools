@@ -366,6 +366,7 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
                     end = (flen % (gSectorSize * gSectorsPerBlock));
                 else
                     end = gSectorSize * gSectorsPerBlock;
+                /* end is an exclusive limit */
                 for (j = start; j < end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
 
@@ -561,6 +562,7 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
     if (flen > 64) {
         uint8_t *buffer = xmalloc(gSectorSize * gSectorsPerBlock);
 
+        /* Stop walking the directory once the callback returns non-zero */
         for (s = 0; !rval && s <= flen / (gSectorSize * gSectorsPerBlock); s++) {
 
             i = FindCluster(fnum, s);
@@ -576,6 +578,7 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
                     end = (flen % (gSectorSize * gSectorsPerBlock));
                 else
                     end = gSectorSize * gSectorsPerBlock;
+                /* end is an exclusive limit */
                 for (j = start; j < end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
                     int fno = FileXDir(ent->d_fileno);
@@ -1011,6 +1014,7 @@ QLDIR *GetNewDirEntry(SDL * sdl, int *filenew, int *nblock, short *diroff) {
     else {
         static QLDIR newent;
 
+        /* Directory length is an exact multiple of the block size, i.e. full */
         if ((sdl->flen % (gSectorSize * gSectorsPerBlock)) == 0) {
             if (AllocNewSubDirCluster(sdl->flen, sdl->fileno)) {
                 *nblock = *nblock + 1;
@@ -1099,6 +1103,12 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs) {
         buf = xmalloc(gSectorSize * gSectorsPerBlock);
         cwdlen = swaplong(fs->nde->d_length);
         {
+            /* Pick the cluster that receives the new entry:
+             * - empty directory: use the freshly allocated cluster
+             * - length is an exact multiple of the block size: the last block is
+             *   full, so allocate a new cluster
+             * - otherwise: read the last cluster and append to it.
+             * cwdlen is then reduced to the offset within that block. */
             long blk = gSectorSize * gSectorsPerBlock;
             int dfile = swapword(fs->nde->d_fileno) - 1;
 
@@ -1114,7 +1124,6 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs) {
                 read_cluster(buf, dcl);
             }
             cwdlen %= blk;
-            nent.d_fileno = nent.d_fileno;
         }
         memcpy(buf+cwdlen, &nent, 64);
         write_cluster(buf, dcl);
