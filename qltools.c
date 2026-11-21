@@ -366,7 +366,7 @@ void UpdateSubEntry(QLDIR * entry, SDL * sdl, short *off) {
                     end = (flen % (gSectorSize * gSectorsPerBlock));
                 else
                     end = gSectorSize * gSectorsPerBlock;
-                for (j = start; j <= end; j += 64) {
+                for (j = start; j < end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
 
                     if (ent->d_fileno == entry->d_fileno) {
@@ -561,7 +561,7 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
     if (flen > 64) {
         uint8_t *buffer = xmalloc(gSectorSize * gSectorsPerBlock);
 
-        for (s = 0; s <= flen / (gSectorSize * gSectorsPerBlock); s++) {
+        for (s = 0; !rval && s <= flen / (gSectorSize * gSectorsPerBlock); s++) {
 
             i = FindCluster(fnum, s);
             if (i != -1) {
@@ -576,7 +576,7 @@ int RecurseDir(int fnum, long flen, void *parm, int (*func) (QLDIR *, int, void 
                     end = (flen % (gSectorSize * gSectorsPerBlock));
                 else
                     end = gSectorSize * gSectorsPerBlock;
-                for (j = start; j <= end; j += 64) {
+                for (j = start; j < end; j += 64) {
                     QLDIR *ent = (QLDIR *) (buffer + j);
                     int fno = FileXDir(ent->d_fileno);
                     if ((rval = (func) (ent, fno, parm)) != 0) {
@@ -1011,7 +1011,7 @@ QLDIR *GetNewDirEntry(SDL * sdl, int *filenew, int *nblock, short *diroff) {
     else {
         static QLDIR newent;
 
-        if ((sdl->flen % gSectorSize * gSectorsPerBlock) == 0) {
+        if ((sdl->flen % (gSectorSize * gSectorsPerBlock)) == 0) {
             if (AllocNewSubDirCluster(sdl->flen, sdl->fileno)) {
                 *nblock = *nblock + 1;
                 *diroff = sdl->flen;
@@ -1098,18 +1098,27 @@ int ProcessSubFile(QLDIR *entry, int fileno, FSBLK *fs) {
 
         buf = xmalloc(gSectorSize * gSectorsPerBlock);
         cwdlen = swaplong(fs->nde->d_length);
-        dcl = fs->fnew;
-        if((cwdlen % gSectorSize * gSectorsPerBlock) == 0) {
-            dcl = alloc_new_cluster(dcl,
-                                    cwdlen / (gSectorSize * gSectorsPerBlock), 0);
-            *(fs->nptr) = *(fs->nptr) + 1;
-        }
-        else if(cwdlen > 64) {
-            read_cluster(buf, dcl);
+        {
+            long blk = gSectorSize * gSectorsPerBlock;
+            int dfile = swapword(fs->nde->d_fileno) - 1;
+
+            if(cwdlen == 0) {
+                dcl = fs->fnew;
+            }
+            else if((cwdlen % blk) == 0) {
+                dcl = alloc_new_cluster(dfile, cwdlen / blk, 0);
+                *(fs->nptr) = *(fs->nptr) + 1;
+            }
+            else {
+                dcl = FindCluster(dfile, cwdlen / blk);
+                read_cluster(buf, dcl);
+            }
+            cwdlen %= blk;
+            nent.d_fileno = nent.d_fileno;
         }
         memcpy(buf+cwdlen, &nent, 64);
         write_cluster(buf, dcl);
-        fs->nde->d_length = swaplong(cwdlen + 64);
+        fs->nde->d_length = swaplong(swaplong(fs->nde->d_length) + 64);
         free(buf);
     }
     else if(entry->d_type == 255) {
